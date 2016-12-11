@@ -4,7 +4,6 @@ namespace App\Exceptions;
 
 use Exception;
 use Illuminate\Auth\AuthenticationException;
-use Illuminate\Session\TokenMismatchException;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -49,7 +48,9 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $e)
     {
-        if ($e instanceof ModelNotFoundException) {
+        if ($e instanceof APIException) {
+            return response()->json(['msg' => $e->getMessage()], $e->getCode());
+        } else if ($e instanceof ModelNotFoundException) {
             return response()->json(['msg' => '资源不存在'], 404);
         } else if ($e instanceof NotFoundHttpException){
             return response()->json(['msg' => '链接不存在'], 404);
