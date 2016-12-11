@@ -48,7 +48,9 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $e)
     {
-        if ($e instanceof APIException) {
+        if ($e instanceof BadRequestException) {
+            return response()->json(['msg' => $e->getMessage()], $e->getCode());
+        } else if ($e instanceof APIException) {
             return response()->json(['msg' => $e->getMessage()], $e->getCode());
         } else if ($e instanceof ModelNotFoundException) {
             return response()->json(['msg' => '资源不存在'], 404);
