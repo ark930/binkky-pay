@@ -29,3 +29,8 @@ $app->group(['prefix' => 'v1'], function() use ($app) {
     });
 });
 
+$app->options('/alipay_wap', 'ExampleController@alipayWap');
+$app->get('/alipay_wap', 'ExampleController@alipayWap');
+
+$app->options('/wechat_qr', 'ExampleController@wechatQR');
+$app->get('/wechat_qr', 'ExampleController@wechatQR');
