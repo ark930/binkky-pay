@@ -2,7 +2,9 @@
 
 namespace App\Libraries\Channel\Alipay;
 
-abstract class AlipayBase
+use App\Libraries\Channel\IPayment;
+
+abstract class AlipayBase implements IPayment
 {
     const GATEWAY_URL = "https://openapi.alipay.com/gateway.do";
 

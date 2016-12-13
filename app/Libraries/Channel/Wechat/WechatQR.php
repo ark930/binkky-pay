@@ -24,7 +24,7 @@ class WechatQR implements IPayment
         $this->key = $channelParams->key;
     }
 
-    public function create(array $chargeParams = [])
+    public function charge(array $chargeParams = [])
     {
         $req = array(
             'appid'            => $this->appId,

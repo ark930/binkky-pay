@@ -2,7 +2,7 @@
 
 namespace App\Libraries\Channel\Alipay;
 
-class AlipayWap extends AlipayBase
+class AlipayQR extends AlipayBase
 {
     public function charge(array $chargeParams)
     {
@@ -12,11 +12,9 @@ class AlipayWap extends AlipayBase
             'out_trade_no'      => $chargeParams['out_trade_no'],
             'timeout_express'   => $chargeParams['timeout_express'],
             'total_amount'      => $chargeParams['total_amount'],
-            'product_code'      => 'QUICK_WAP_PAY',
         ];
 
-        $commonParams = $this->makeCommonParameters(self::METHODS['wap.pay'], $chargeParams['timestamp']);
-        $commonParams['return_url'] = $chargeParams['return_url'];
+        $commonParams = $this->makeCommonParameters(self::METHODS['qrcode.pay'], $chargeParams['timestamp']);
         $commonParams['notify_url'] = $chargeParams['notify_url'];
         $commonParams['biz_content'] = json_encode($bizContent);
 
