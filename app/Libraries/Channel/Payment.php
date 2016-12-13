@@ -3,6 +3,7 @@
 namespace App\Libraries\Channel;
 
 use App\Libraries\Channel\Alipay\AlipayQR;
+use App\Libraries\Channel\Alipay\AlipayScan;
 use App\Libraries\Channel\Alipay\AlipayWap;
 use App\Libraries\Channel\Wechat\WechatQR;
 use App\Models\ChannelAlipay;
@@ -14,6 +15,7 @@ class Payment
     const CHANNEL_WECHAT = 'wechat';
 
     const PAYMENT_QR = 'qr';
+    const PAYMENT_SCAN = 'scan';
     const PAYMENT_WAP = 'wap';
 
     public static function make($channelName, $paymentType)
@@ -27,6 +29,8 @@ class Payment
                 $payment = new AlipayWap($channelParams);
             } else if($paymentType === self::PAYMENT_QR) {
                 $payment = new AlipayQR($channelParams);
+            } else if($paymentType === self::PAYMENT_SCAN) {
+                $payment = new AlipayScan($channelParams);
             }
         } else if($channelName === self::CHANNEL_WECHAT) {
             $channelParams = ChannelWechat::getPaymentParameters();

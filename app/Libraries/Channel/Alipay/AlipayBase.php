@@ -13,7 +13,7 @@ abstract class AlipayBase implements IPayment
     const SIGN_TYPE_RSA = 'RSA';
     const CHARSET_UTF8 = 'UTF-8';
     const METHODS = [
-        'face.pay'      => 'alipay.trade.pay',
+        'scan.pay'      => 'alipay.trade.pay',
         'qrcode.pay'    => 'alipay.trade.precreate',
         'wap.pay'       => 'alipay.trade.wap.pay',
         'query'         => 'alipay.trade.query',
