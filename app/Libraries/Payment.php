@@ -2,6 +2,7 @@
 
 namespace App\Libraries;
 
+use App\Libraries\Channel\Alipay\AlipayWap;
 use App\Models\ChannelAlipay;
 use App\Models\ChannelWechat;
 
