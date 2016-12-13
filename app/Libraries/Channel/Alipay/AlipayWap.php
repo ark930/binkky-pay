@@ -17,52 +17,13 @@ class AlipayWap extends AlipayBase implements IPayment
             'product_code'      => 'QUICK_WAP_PAY',
         ];
 
-        $totalParams = [
-            'app_id'        => $this->appId,
-            'method'        => self::METHOD_WAP,
-            'format'        => self::FORMAT_JSON,
-            'return_url'    => $chargeParams['return_url'],
-            'charset'       => self::CHARSET_UTF8,
-            'sign_type'     => self::SIGN_TYPE_RSA,
-            'timestamp'     => $chargeParams['timestamp'],
-            'version'       => self::VERSION_1_0,
-            'notify_url'    => $chargeParams['notify_url'],
-            'biz_content'   => json_encode($bizContent),
-        ];
+        $commonParams = $this->makeCommonParameters(self::METHODS['wap.pay'], $chargeParams['timestamp']);
+        $commonParams['return_url'] = $chargeParams['return_url'];
+        $commonParams['notify_url'] = $chargeParams['notify_url'];
+        $commonParams['biz_content'] = json_encode($bizContent);
 
-        $preSignStr = $this->getSignContent($totalParams);
-        $sign =  $this->sign($preSignStr, $this->privateKey);
-        $requestUrl = self::GATEWAY_URL."?".$preSignStr."&sign=".urlencode($sign);
+        $requestUrl = $this->makeRequestUrl($commonParams);
 
         return $requestUrl;
-    }
-
-    protected function getSignContent($params) {
-        ksort($params);
-
-        $stringToBeSigned = "";
-        $i = 0;
-        foreach ($params as $k => $v) {
-            if ("@" != substr($v, 0, 1)) {
-
-                if ($i == 0) {
-                    $stringToBeSigned .= "$k" . "=" . "$v";
-                } else {
-                    $stringToBeSigned .= "&" . "$k" . "=" . "$v";
-                }
-                $i++;
-            }
-        }
-
-        unset ($k, $v);
-
-        return $stringToBeSigned;
-    }
-
-    protected function sign($data, $privateKey) {
-        openssl_sign($data, $sign, $privateKey);
-        $sign = base64_encode($sign);
-
-        return $sign;
     }
 }
