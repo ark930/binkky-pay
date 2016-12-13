@@ -3,9 +3,12 @@
 namespace App\Libraries\Channel\Alipay;
 
 use App\Libraries\Channel\IPayment;
+use App\Libraries\HttpClientTrait;
 
-abstract class AlipayBase implements IPayment
+class AlipayBase implements IPayment
 {
+    use HttpClientTrait;
+
     const GATEWAY_URL = "https://openapi.alipay.com/gateway.do";
 
     const FORMAT_JSON = 'JSON';
@@ -21,17 +24,23 @@ abstract class AlipayBase implements IPayment
         'cancel'        => 'alipay.trade.cancel',
         'refund'        => 'alipay.trade.refund',
         'refund.query'  => 'alipay.trade.fastpay.refund.query',
-        'bill.query'    => 'alipay.data.dataservice.bill.downloadurl.query',
-        'monitor'       => 'monitor.heartbeat.syn',
+        'bill.check'    => 'alipay.data.dataservice.bill.downloadurl.query',
+        'settle '       => 'alipay.trade.order.settle',
     ];
 
     protected $appId = null;
     protected $privateKey = null;
+    protected $alipayPublicKey = null;
 
     public function __construct($channelParams)
     {
         $this->appId = $channelParams->appid;
         $this->privateKey = $channelParams->private_key;
+        $this->alipayPublicKey = $channelParams->alipay_public_key;
+    }
+
+    public function charge(array $chargeParams)
+    {
     }
 
     public function query(array $chargeParams)
@@ -101,6 +110,40 @@ abstract class AlipayBase implements IPayment
         return $requestUrl;
     }
 
+    public function settle(array $chargeParams)
+    {
+        $bizContent = [
+            'out_trade_no'      => $chargeParams['out_trade_no'],
+            'trade_no'          => $chargeParams['trade_no'],
+            'royalty_parameters'=> $chargeParams['royalty_parameters'],
+            'operator_id'       => $chargeParams['operator_id'],
+        ];
+
+        $requestUrl = $this->makeRequest(self::METHODS['cancel'], $chargeParams['timestamp'], $bizContent);
+
+        return $requestUrl;
+    }
+
+    public function billQuery(array $params)
+    {
+        $bizContent = [
+            'bill_type'         => $params['bill_type'],
+            'bill_date'         => $params['bill_date'],
+        ];
+
+        $requestUrl = $this->makeRequest(self::METHODS['bill.check'], $params['timestamp'], $bizContent);
+
+        $this->initHttpClient(self::GATEWAY_URL);
+        $body = $this->requestForm('GET', $requestUrl);
+
+        $sign = $body['sign'];
+        $preSignStr = $this->getSignContent($body['alipay_data_dataservice_bill_downloadurl_query_response']);
+
+        $ret = $this->verify($preSignStr, $sign, $this->alipayPublicKey);
+
+        return $body['alipay_data_dataservice_bill_downloadurl_query_response']['bill_download_url'];
+    }
+
     protected function makeRequest($method, $timestamp, $bizContent)
     {
         $commonParams = $this->makeCommonParameters($method, $timestamp);
@@ -130,7 +173,7 @@ abstract class AlipayBase implements IPayment
     {
         $preSignStr = $this->getSignContent($params);
         $sign =  $this->sign($preSignStr, $this->privateKey);
-        $requestUrl = self::GATEWAY_URL."?".$preSignStr."&sign=".urlencode($sign);
+        $requestUrl = "?".$preSignStr."&sign=".urlencode($sign);
 
         return $requestUrl;
     }
@@ -152,7 +195,7 @@ abstract class AlipayBase implements IPayment
             }
         }
 
-        unset ($k, $v);
+//        unset ($k, $v);
 
         return $stringToBeSigned;
     }
@@ -162,5 +205,13 @@ abstract class AlipayBase implements IPayment
         $sign = base64_encode($sign);
 
         return $sign;
+    }
+
+    protected function verify($data, $sign, $alipayPublicKey) {
+        if(openssl_verify($data, base64_decode($sign), $alipayPublicKey) === 1) {
+            return true;
+        }
+
+        return false;
     }
 }
