@@ -60,6 +60,11 @@ class Handler extends ExceptionHandler
             return response()->json(['msg' => '未授权'], 401);
         } else if ($e instanceof MethodNotAllowedHttpException) {
             return response()->json(['msg' => '无效的访问方式'], 404);
+        } else if($e instanceof ValidationException) {
+            $errors = [
+                'params' => $e->getResponse()->getData(),
+            ];
+            return response()->json(array_merge(['msg' => '参数验证失败'], (array)$errors), 422);
         }
 
         return parent::render($request, $e);
