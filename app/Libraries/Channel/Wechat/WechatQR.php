@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Libraries;
+namespace App\Libraries\Channel\Wechat;
 
 use App\Exceptions\APIException;
+use App\Libraries\Channel\IPayment;
 
 class WechatQR implements IPayment
 {

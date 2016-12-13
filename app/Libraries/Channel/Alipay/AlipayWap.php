@@ -2,7 +2,7 @@
 
 namespace App\Libraries\Channel\Alipay;
 
-use App\Libraries\IPayment;
+use App\Libraries\Channel\IPayment;
 
 class AlipayWap extends AlipayBase implements IPayment
 {

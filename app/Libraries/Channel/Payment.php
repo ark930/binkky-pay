@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Libraries;
+namespace App\Libraries\Channel;
 
 use App\Libraries\Channel\Alipay\AlipayWap;
+use App\Libraries\Channel\Wechat\WechatQR;
 use App\Models\ChannelAlipay;
 use App\Models\ChannelWechat;
 
