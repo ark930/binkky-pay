@@ -2,22 +2,24 @@
 
 namespace App\Libraries\Channel\Alipay;
 
+use App\Models\Charge;
+
 class AlipayWap extends AlipayBase
 {
-    public function charge(array $chargeParams)
+    public function charge(Charge $charge)
     {
         $bizContent = [
-            'subject'           => $chargeParams['subject'],
-            'body'              => $chargeParams['body'],
-            'out_trade_no'      => $chargeParams['out_trade_no'],
-            'timeout_express'   => $chargeParams['timeout_express'],
-            'total_amount'      => $chargeParams['total_amount'],
+            'subject'           => $charge['subject'],
+            'body'              => $charge['body'],
+            'out_trade_no'      => $charge['order_no'],
+            'timeout_express'   => $charge['expired_at'],
+            'total_amount'      => $charge['amount'],
             'product_code'      => 'QUICK_WAP_PAY',
         ];
 
-        $commonParams = $this->makeCommonParameters(self::METHODS['wap.pay'], $chargeParams['timestamp']);
-        $commonParams['return_url'] = $chargeParams['return_url'];
-        $commonParams['notify_url'] = $chargeParams['notify_url'];
+        $commonParams = $this->makeCommonParameters(self::METHODS['wap.pay'], $charge['created_at']);
+        $commonParams['return_url'] = $charge['return_url'];
+        $commonParams['notify_url'] = $charge['notify_url'];
         $commonParams['biz_content'] = json_encode($bizContent);
 
         $requestUrl = $this->makeRequestUrl($commonParams);

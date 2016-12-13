@@ -2,20 +2,22 @@
 
 namespace App\Libraries\Channel\Alipay;
 
+use App\Models\Charge;
+
 class AlipayQR extends AlipayBase
 {
-    public function charge(array $chargeParams)
+    public function charge(Charge $charge)
     {
         $bizContent = [
-            'subject'           => $chargeParams['subject'],
-            'body'              => $chargeParams['body'],
-            'out_trade_no'      => $chargeParams['out_trade_no'],
-            'timeout_express'   => $chargeParams['timeout_express'],
-            'total_amount'      => $chargeParams['total_amount'],
+            'subject'           => $charge['subject'],
+            'body'              => $charge['body'],
+            'out_trade_no'      => $charge['order_no'],
+            'timeout_express'   => $charge['expired_at'],
+            'total_amount'      => $charge['amount'],
         ];
 
-        $commonParams = $this->makeCommonParameters(self::METHODS['qrcode.pay'], $chargeParams['timestamp']);
-        $commonParams['notify_url'] = $chargeParams['notify_url'];
+        $commonParams = $this->makeCommonParameters(self::METHODS['qrcode.pay'], $charge['created_at']);
+        $commonParams['notify_url'] = $charge['notify_url'];
         $commonParams['biz_content'] = json_encode($bizContent);
 
         $requestUrl = $this->makeRequestUrl($commonParams);

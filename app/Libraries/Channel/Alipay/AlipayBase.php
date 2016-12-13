@@ -4,6 +4,7 @@ namespace App\Libraries\Channel\Alipay;
 
 use App\Libraries\Channel\IPayment;
 use App\Libraries\HttpClientTrait;
+use App\Models\Charge;
 
 class AlipayBase implements IPayment
 {
@@ -39,87 +40,108 @@ class AlipayBase implements IPayment
         $this->alipayPublicKey = $channelParams->alipay_public_key;
     }
 
-    public function charge(array $chargeParams)
+    public function charge(Charge $charge)
     {
     }
 
-    public function query(array $chargeParams)
+    public function query(Charge $charge)
+    {
+        if(!empty($charge['transaction_no'])) {
+            $bizContent['trade_no'] = $charge['transaction_no'];
+        } else {
+            $bizContent['out_trade_no'] = $charge['order_no'];
+        }
+
+        $requestUrl = $this->makeRequest(self::METHODS['query'], $bizContent);
+        $this->initHttpClient(self::GATEWAY_URL);
+        $response = $this->requestJson('GET', $requestUrl);
+
+        return $response;
+    }
+
+    public function notify(Charge $charge, array $notify)
+    {
+        return '';
+    }
+
+    public function refund(Charge $charge, array $refund)
     {
         $bizContent = [
-            'out_trade_no'      => $chargeParams['out_trade_no'],
-            'trade_no'          => $chargeParams['trade_no'],
+            'refund_amount'     => $refund['refund_amount'],
+            'refund_reason'     => $refund['refund_reason'],
+            'out_request_no'    => $refund['out_request_no'],
+            'operator_id'       => $refund['operator_id'],
+            'terminal_id'       => $refund['terminal_id'],
         ];
 
-        $requestUrl = $this->makeRequest(self::METHODS['query'], $chargeParams['timestamp'], $bizContent);
+        if(!empty($charge['transaction_no'])) {
+            $bizContent['trade_no'] = $charge['transaction_no'];
+        } else {
+            $bizContent['out_trade_no'] = $charge['order_no'];
+        }
+
+        $requestUrl = $this->makeRequest(self::METHODS['refund'], $bizContent);
 
         return $requestUrl;
     }
 
-    public function refund(array $chargeParams, array $refundParams)
+    public function refundQuery(Charge $charge, array $refund)
     {
-        $bizContent = [
-            'out_trade_no'      => $chargeParams['out_trade_no'],
-            'trade_no'          => $chargeParams['trade_no'],
-            'refund_amount'     => $refundParams['refund_amount'],
-            'refund_reason'     => $refundParams['refund_reason'],
-            'out_request_no'    => $refundParams['out_request_no'],
-            'operator_id'       => $refundParams['operator_id'],
-            'terminal_id'       => $refundParams['terminal_id'],
-        ];
+        $bizContent['out_request_no'] = $refund['out_request_no'];
 
-        $requestUrl = $this->makeRequest(self::METHODS['refund'], $chargeParams['timestamp'], $bizContent);
+        if(!empty($charge['transaction_no'])) {
+            $bizContent['trade_no'] = $charge['transaction_no'];
+        } else {
+            $bizContent['out_trade_no'] = $charge['order_no'];
+        }
+
+        $requestUrl = $this->makeRequest(self::METHODS['refund.query'], $bizContent);
 
         return $requestUrl;
     }
 
-    public function refundQuery(array $chargeParams, array $refundParams)
+    public function close(Charge $charge)
     {
-        $bizContent = [
-            'out_trade_no'      => $chargeParams['out_trade_no'],
-            'trade_no'          => $chargeParams['trade_no'],
-            'out_request_no'    => $refundParams['out_request_no'],
-        ];
+        $bizContent['operator_id'] = $charge['operator_id'];
 
-        $requestUrl = $this->makeRequest(self::METHODS['refund.query'], $chargeParams['timestamp'], $bizContent);
+        if(!empty($charge['transaction_no'])) {
+            $bizContent['trade_no'] = $charge['transaction_no'];
+        } else {
+            $bizContent['out_trade_no'] = $charge['order_no'];
+        }
+
+        $requestUrl = $this->makeRequest(self::METHODS['close'], $bizContent);
 
         return $requestUrl;
     }
 
-    public function close(array $chargeParams)
+    public function cancel(Charge $charge)
     {
-        $bizContent = [
-            'out_trade_no'      => $chargeParams['out_trade_no'],
-            'trade_no'          => $chargeParams['trade_no'],
-            'operator_id'       => $chargeParams['operator_id'],
-        ];
+        if(!empty($charge['transaction_no'])) {
+            $bizContent['trade_no'] = $charge['transaction_no'];
+        } else {
+            $bizContent['out_trade_no'] = $charge['order_no'];
+        }
 
-        $requestUrl = $this->makeRequest(self::METHODS['close'], $chargeParams['timestamp'], $bizContent);
+        $requestUrl = $this->makeRequest(self::METHODS['cancel'], $bizContent);
 
         return $requestUrl;
     }
 
-    public function cancel(array $chargeParams)
+    public function settle(Charge $charge)
     {
         $bizContent = [
-            'out_trade_no'      => $chargeParams['out_trade_no'],
-            'trade_no'          => $chargeParams['trade_no'],
+            'royalty_parameters'=> $charge['royalty_parameters'],
+            'operator_id'       => $charge['operator_id'],
         ];
 
-        $requestUrl = $this->makeRequest(self::METHODS['cancel'], $chargeParams['timestamp'], $bizContent);
+        if(!empty($charge['transaction_no'])) {
+            $bizContent['trade_no'] = $charge['transaction_no'];
+        } else {
+            $bizContent['out_trade_no'] = $charge['order_no'];
+        }
 
-        return $requestUrl;
-    }
-
-    public function settle(array $chargeParams)
-    {
-        $bizContent = [
-            'out_trade_no'      => $chargeParams['out_trade_no'],
-            'trade_no'          => $chargeParams['trade_no'],
-            'royalty_parameters'=> $chargeParams['royalty_parameters'],
-            'operator_id'       => $chargeParams['operator_id'],
-        ];
-
-        $requestUrl = $this->makeRequest(self::METHODS['cancel'], $chargeParams['timestamp'], $bizContent);
+        $requestUrl = $this->makeRequest(self::METHODS['cancel'], $bizContent);
 
         return $requestUrl;
     }
@@ -131,10 +153,11 @@ class AlipayBase implements IPayment
             'bill_date'         => $params['bill_date'],
         ];
 
-        $requestUrl = $this->makeRequest(self::METHODS['bill.check'], $params['timestamp'], $bizContent);
+        $requestUrl = $this->makeRequest(self::METHODS['bill.check'], $bizContent);
 
         $this->initHttpClient(self::GATEWAY_URL);
         $body = $this->requestForm('GET', $requestUrl);
+        $body = \GuzzleHttp\json_decode($body);
 
         $sign = $body['sign'];
         $preSignStr = $this->getSignContent($body['alipay_data_dataservice_bill_downloadurl_query_response']);
@@ -144,8 +167,11 @@ class AlipayBase implements IPayment
         return $body['alipay_data_dataservice_bill_downloadurl_query_response']['bill_download_url'];
     }
 
-    protected function makeRequest($method, $timestamp, $bizContent)
+    protected function makeRequest($method, $bizContent, $timestamp = null)
     {
+        if(is_null($timestamp)) {
+            $timestamp = date('Y-m-d H:i:s');
+        }
         $commonParams = $this->makeCommonParameters($method, $timestamp);
         $commonParams['biz_content'] = json_encode($bizContent);
 
