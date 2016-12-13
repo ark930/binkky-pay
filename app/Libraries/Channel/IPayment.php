@@ -4,5 +4,5 @@ namespace App\Libraries\Channel;
 
 interface IPayment
 {
-    public function create(array $chargeParams);
+    public function charge(array $chargeParams);
 }
