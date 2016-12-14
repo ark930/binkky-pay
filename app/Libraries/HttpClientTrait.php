@@ -11,7 +11,7 @@ trait HttpClientTrait
 {
     protected $httpClient = null;
 
-    protected function initHttpClient($baseUrl = '', array $headers = [])
+    public function initHttpClient($baseUrl = '', array $headers = [])
     {
         $this->httpClient = new Client([
             'base_uri' => $baseUrl,
@@ -20,28 +20,28 @@ trait HttpClientTrait
         ]);
     }
 
-    protected function requestJson($method, $url, $data = null)
+    public function requestJson($method, $url, $data = null)
     {
         $options = ['json' => $data];
 
         return $this->request($method, $url, $options);
     }
 
-    protected function requestForm($method, $url, $data = null)
+    public function requestForm($method, $url, $data = null)
     {
         $options = ['form_params' => $data];
 
         return $this->request($method, $url, $options);
     }
 
-    protected function requestPlainText($method, $url, $data = null)
+    public function requestPlainText($method, $url, $data = null)
     {
         $options = ['body' => $data];
 
         return $this->request($method, $url, $options);
     }
 
-    protected function request($method, $url, $options = [])
+    public function request($method, $url, $options = [])
     {
         try {
             $res = $this->httpClient->request($method, $url, $options);
