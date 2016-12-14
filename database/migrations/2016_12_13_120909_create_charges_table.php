@@ -19,9 +19,13 @@ class CreateChargesTable extends Migration
             $table->enum('type', ['qr', 'scan', 'pub', 'wap'])->comment('支付类型');
             $table->string('order_no', 64)->comment('商户订单号');
             $table->string('transaction_no', 64)->nullalbe()->comment('渠道交易单号');
-            $table->unsignedInteger('amount')->comment('支付金额');
+            $table->unsignedInteger('amount')->comment('支付金额，以分为单位');
+            $table->unsignedInteger('amount_refunded')->default(0)->comment('退款金额，以分为单位');
+//            $table->boolean('refunded')->default(false)->comment('是否有退款，包括全额退款和部分退款');
+            $table->string('subject', 64)->comment('支付标题');
+            $table->string('body', 128)->comment('支付描述');
             $table->enum('currency', ['cny'])->comment('货币类型');
-            $table->enum('status', ['open', 'paid', 'refund', 'finish', 'close'])->comment('支付状态');
+            $table->enum('status', ['pending', 'succeeded', 'failed', 'closed'])->comment('支付状态');
             $table->timestamp('paid_at')->nullable()->comment('支付完成时间');
             $table->timestamp('expired_at')->nullable()->comment('支付过期时间');
             $table->timestamps();
