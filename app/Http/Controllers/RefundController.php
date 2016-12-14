@@ -9,12 +9,7 @@ class RefundController extends Controller
         return response('', 200);
     }
 
-    public function retrieve()
-    {
-        return response('', 200);
-    }
-
-    public function notify()
+    public function query()
     {
         return response('', 200);
     }
