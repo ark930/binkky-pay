@@ -15,6 +15,7 @@ class CreateChargesTable extends Migration
     {
         Schema::create('charges', function(Blueprint $table) {
             $table->bigIncrements('id');
+            $table->unsignedInteger('app_id');
             $table->enum('channel', ['alipay', 'wechat'])->comment('渠道名称');
             $table->enum('type', ['qr', 'scan', 'pub', 'wap'])->comment('支付类型');
             $table->string('order_no', 64)->comment('商户订单号');

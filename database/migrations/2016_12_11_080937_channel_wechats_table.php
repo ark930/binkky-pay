@@ -15,7 +15,7 @@ class ChannelWechatsTable extends Migration
     {
         Schema::create('channel_wechats', function(Blueprint $table) {
             $table->increments('id');
-            $table->unsignedInteger('merchant_id');
+            $table->unsignedInteger('app_id');
             $table->char('appid', 18)->comment('公众账号ID');
             $table->string('mch_id', 32)->comment('商户号');
             $table->char('key', 32)->comment('商户支付密钥');
