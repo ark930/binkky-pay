@@ -18,7 +18,7 @@ class ChargeController extends Controller
         $charge['currency'] = $request->input('currency');
         $charge->save();
 
-        $payment = Payment::make('alipay_wap');
+        $payment = Payment::make($charge['channel'], $charge['type']);
         $payUrl = $payment->charge($charge);
 
         return response([
