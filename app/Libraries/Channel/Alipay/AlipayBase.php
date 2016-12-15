@@ -2,6 +2,7 @@
 
 namespace App\Libraries\Channel\Alipay;
 
+use App\Libraries\Channel\Helper;
 use App\Libraries\Channel\IPayment;
 use App\Libraries\HttpClient;
 use App\Models\Charge;
@@ -29,16 +30,16 @@ class AlipayBase implements IPayment
     ];
 
     const RESPONSE_KEY = [
-//        'scan.pay'      => 'alipay.trade.pay',
-//        'qrcode.pay'    => 'alipay.trade.precreate',
+        'scan.pay'      => 'alipay_trade_pay_response',
+        'qrcode.pay'    => 'alipay_trade_precreate_response',
 //        'wap.pay'       => 'alipay.trade.wap.pay',
         'query'         => 'alipay_trade_query_response',
-//        'close'         => 'alipay.trade.close',
-//        'cancel'        => 'alipay.trade.cancel',
+        'close'         => 'alipay_trade_close_response',
+        'cancel'        => 'alipay_trade_cancel_response',
         'refund'        => 'alipay_trade_refund_response',
         'refund.query'  => 'alipay_trade_fastpay_refund_query_response',
-//        'bill.check'    => 'alipay.data.dataservice.bill.downloadurl.query',
-//        'settle '       => 'alipay.trade.order.settle',
+        'bill.check'    => 'alipay_data_dataservice_bill_downloadurl_query_response',
+        'settle '       => 'alipay_trade_order_settle_response',
     ];
 
     const RESPONSE_CODE = [
@@ -53,9 +54,9 @@ class AlipayBase implements IPayment
 
     public function __construct($channelParams, HttpClient $httpClient)
     {
-        $this->appId = $channelParams->appid;
-        $this->privateKey = $channelParams->private_key;
-        $this->alipayPublicKey = $channelParams->alipay_public_key;
+        $this->appId = $channelParams['appid'];
+        $this->privateKey = $channelParams['private_key'];
+        $this->alipayPublicKey = $channelParams['alipay_public_key'];
 
         $this->httpClient = $httpClient;
     }
@@ -79,10 +80,15 @@ class AlipayBase implements IPayment
 
         $data = $this->parseResponse($response, self::RESPONSE_KEY['query']);
 
-        if($data['trade_status'] === 'TRADE_FINISHED' || $data['trade_status'] === 'TRADE_SUCCESS') {
-            $charge['status'] = Charge::STATUS_SUCCEEDED;
-            $charge['paid_at'] = $data['send_pay_date'];
-            empty($charge['transaction_no']) && $charge['transaction_no'] = $data['trade_no'];
+        if($data['code'] === self::RESPONSE_CODE['success']) {
+            if($data['trade_status'] === 'TRADE_FINISHED' || $data['trade_status'] === 'TRADE_SUCCESS') {
+                $charge['status'] = Charge::STATUS_SUCCEEDED;
+                $charge['paid_at'] = $data['send_pay_date'];
+                $charge['transaction_no'] = $data['trade_no'];
+                $charge->save();
+            }
+        } else {
+            $charge['status'] = Charge::STATUS_FAILED;
             $charge->save();
         }
 
@@ -111,7 +117,7 @@ class AlipayBase implements IPayment
             $bizContent['out_trade_no'] = $charge['order_no'];
         }
 
-        $requestUrl = $this->makeRequest(self::METHODS['refund'], $bizContent);
+        $requestUrl = $this->makeRequest(self::METHODS['refund'], $bizContent, $refund['created_at']);
 
         $this->httpClient->initHttpClient(self::GATEWAY_URL);
         $response = $this->httpClient->requestJson('GET', $requestUrl);
@@ -240,31 +246,17 @@ class AlipayBase implements IPayment
     {
         $preSignStr = $this->getSignContent($params);
         $sign =  $this->sign($preSignStr, $this->privateKey);
-        $requestUrl = "?".$preSignStr."&sign=".urlencode($sign);
+        $requestUrl = self::GATEWAY_URL."?".$preSignStr."&sign=".urlencode($sign);
 
         return $requestUrl;
     }
 
-    protected function getSignContent($params) {
+    protected function getSignContent($params)
+    {
+        $params = Helper::removeEmpty($params);
         ksort($params);
 
-        $stringToBeSigned = "";
-        $i = 0;
-        foreach ($params as $k => $v) {
-            if ("@" != substr($v, 0, 1)) {
-
-                if ($i == 0) {
-                    $stringToBeSigned .= "$k" . "=" . ($v);
-                } else {
-                    $stringToBeSigned .= "&" . "$k" . "=" . ($v);
-                }
-                $i++;
-            }
-        }
-
-//        unset ($k, $v);
-
-        return $stringToBeSigned;
+        return Helper::joinToString($params);
     }
 
     protected function sign($data, $privateKey) {
@@ -298,5 +290,20 @@ class AlipayBase implements IPayment
 //            return true;
 //        }
         return false;
+    }
+
+    protected function formatAmount($amount)
+    {
+        return $amount / 100;
+    }
+
+    protected function makeNotifyUrl($charge_id)
+    {
+        return '';
+    }
+
+    protected function makeExpiredTime($second)
+    {
+        return '90m';
     }
 }
