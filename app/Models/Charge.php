@@ -6,4 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Charge extends Model
 {
+    const STATUS_PENDING= 'pending';
+    const STATUS_SUCCEEDED = 'succeeded';
+    const STATUS_FAILED = 'failed';
+    const STATUS_CLOSED = 'closed';
 }
