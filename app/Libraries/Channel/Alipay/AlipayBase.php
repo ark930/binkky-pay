@@ -3,13 +3,12 @@
 namespace App\Libraries\Channel\Alipay;
 
 use App\Libraries\Channel\IPayment;
-use App\Libraries\HttpClientTrait;
+use App\Libraries\HttpClient;
 use App\Models\Charge;
+use App\Models\Refund;
 
 class AlipayBase implements IPayment
 {
-    use HttpClientTrait;
-
     const GATEWAY_URL = "https://openapi.alipay.com/gateway.do";
 
     const FORMAT_JSON = 'JSON';
@@ -29,15 +28,36 @@ class AlipayBase implements IPayment
         'settle '       => 'alipay.trade.order.settle',
     ];
 
+    const RESPONSE_KEY = [
+//        'scan.pay'      => 'alipay.trade.pay',
+//        'qrcode.pay'    => 'alipay.trade.precreate',
+//        'wap.pay'       => 'alipay.trade.wap.pay',
+        'query'         => 'alipay_trade_query_response',
+//        'close'         => 'alipay.trade.close',
+//        'cancel'        => 'alipay.trade.cancel',
+        'refund'        => 'alipay_trade_refund_response',
+        'refund.query'  => 'alipay_trade_fastpay_refund_query_response',
+//        'bill.check'    => 'alipay.data.dataservice.bill.downloadurl.query',
+//        'settle '       => 'alipay.trade.order.settle',
+    ];
+
+    const RESPONSE_CODE = [
+        'success'           => '10000',
+        'business.failed'   => '40004',
+    ];
+
     protected $appId = null;
     protected $privateKey = null;
     protected $alipayPublicKey = null;
+    protected $httpClient = null;
 
-    public function __construct($channelParams)
+    public function __construct($channelParams, HttpClient $httpClient)
     {
         $this->appId = $channelParams->appid;
         $this->privateKey = $channelParams->private_key;
         $this->alipayPublicKey = $channelParams->alipay_public_key;
+
+        $this->httpClient = $httpClient;
     }
 
     public function charge(Charge $charge)
@@ -53,10 +73,20 @@ class AlipayBase implements IPayment
         }
 
         $requestUrl = $this->makeRequest(self::METHODS['query'], $bizContent);
-        $this->initHttpClient(self::GATEWAY_URL);
-        $response = $this->requestJson('GET', $requestUrl);
 
-        return $response;
+        $this->httpClient->initHttpClient(self::GATEWAY_URL);
+        $response = $this->httpClient->requestJson('GET', $requestUrl);
+
+        $data = $this->parseResponse($response, self::RESPONSE_KEY['query']);
+
+        if($data['trade_status'] === 'TRADE_FINISHED' || $data['trade_status'] === 'TRADE_SUCCESS') {
+            $charge['status'] = Charge::STATUS_SUCCEEDED;
+            $charge['paid_at'] = $data['send_pay_date'];
+            empty($charge['transaction_no']) && $charge['transaction_no'] = $data['trade_no'];
+            $charge->save();
+        }
+
+        return $data;
     }
 
     public function notify(Charge $charge, array $notify)
@@ -64,14 +94,15 @@ class AlipayBase implements IPayment
         return '';
     }
 
-    public function refund(Charge $charge, array $refund)
+    public function refund(Charge $charge, Refund $refund)
     {
         $bizContent = [
-            'refund_amount'     => $refund['refund_amount'],
-            'refund_reason'     => $refund['refund_reason'],
-            'out_request_no'    => $refund['out_request_no'],
-            'operator_id'       => $refund['operator_id'],
-            'terminal_id'       => $refund['terminal_id'],
+            'refund_amount'     => $refund['amount'],
+            'refund_reason'     => $refund['description'],
+            'out_request_no'    => $refund['order_no'],
+//            'operator_id'       => $refund['operator_id'],
+//            'store_id'          => $refund['store_id'],
+//            'terminal_id'       => $refund['terminal_id'],
         ];
 
         if(!empty($charge['transaction_no'])) {
@@ -82,12 +113,17 @@ class AlipayBase implements IPayment
 
         $requestUrl = $this->makeRequest(self::METHODS['refund'], $bizContent);
 
-        return $requestUrl;
+        $this->httpClient->initHttpClient(self::GATEWAY_URL);
+        $response = $this->httpClient->requestJson('GET', $requestUrl);
+
+        $data = $this->parseResponse($response, self::RESPONSE_KEY['refund']);
+
+        return $data;
     }
 
-    public function refundQuery(Charge $charge, array $refund)
+    public function refundQuery(Charge $charge, Refund $refund)
     {
-        $bizContent['out_request_no'] = $refund['out_request_no'];
+        $bizContent['out_request_no'] = $charge['order_no'];
 
         if(!empty($charge['transaction_no'])) {
             $bizContent['trade_no'] = $charge['transaction_no'];
@@ -97,7 +133,12 @@ class AlipayBase implements IPayment
 
         $requestUrl = $this->makeRequest(self::METHODS['refund.query'], $bizContent);
 
-        return $requestUrl;
+        $this->httpClient->initHttpClient(self::GATEWAY_URL);
+        $response = $this->httpClient->requestJson('GET', $requestUrl);
+
+        $data = $this->parseResponse($response, self::RESPONSE_KEY['refund.query']);
+
+        return $data;
     }
 
     public function close(Charge $charge)
@@ -213,9 +254,9 @@ class AlipayBase implements IPayment
             if ("@" != substr($v, 0, 1)) {
 
                 if ($i == 0) {
-                    $stringToBeSigned .= "$k" . "=" . "$v";
+                    $stringToBeSigned .= "$k" . "=" . ($v);
                 } else {
-                    $stringToBeSigned .= "&" . "$k" . "=" . "$v";
+                    $stringToBeSigned .= "&" . "$k" . "=" . ($v);
                 }
                 $i++;
             }
@@ -233,11 +274,29 @@ class AlipayBase implements IPayment
         return $sign;
     }
 
-    protected function verify($data, $sign, $alipayPublicKey) {
-        if(openssl_verify($data, base64_decode($sign), $alipayPublicKey) === 1) {
-            return true;
+    protected function parseResponse($response, $key)
+    {
+        $response = \GuzzleHttp\json_decode($response, true);
+
+        $sign = $response['sign'];
+        $data = $response[$key];
+
+        if($this->verify($data, $sign, $this->alipayPublicKey) === false) {
+            // TODO throw exception
         }
 
+        if($data['code'] === self::RESPONSE_CODE['success']) {
+
+        }
+
+        return $data;
+    }
+
+    protected function verify($data, $sign, $alipayPublicKey) {
+        $signString = $this->getSignContent($data);
+//        if(openssl_verify($signString, base64_decode($sign), $alipayPublicKey) === 1) {
+//            return true;
+//        }
         return false;
     }
 }
