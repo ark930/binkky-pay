@@ -5,14 +5,11 @@ namespace App\Libraries\Channel\Alipay;
 use App\Libraries\Channel\Helper;
 use App\Libraries\Channel\IPayment;
 use App\Libraries\HttpClient;
-use App\Libraries\HttpClientTrait;
 use App\Models\Charge;
 use App\Models\Refund;
 
 class AlipayBase implements IPayment
 {
-    use HttpClientTrait;
-
     const GATEWAY_URL = "https://openapi.alipay.com/gateway.do";
 
     const FORMAT_JSON = 'JSON';

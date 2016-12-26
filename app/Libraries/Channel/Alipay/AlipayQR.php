@@ -23,8 +23,8 @@ class AlipayQR extends AlipayBase
 
         $requestUrl = $this->makeRequestUrl($commonParams);
 
-        $this->initHttpClient('');
-        $res = $this->requestPlainText('GET', $requestUrl);
+        $this->httpClient->initHttpClient('');
+        $res = $this->httpClient->requestPlainText('GET', $requestUrl);
         $res = \GuzzleHttp\json_decode($res, true);
 
         $res = $res[self::RESPONSE_KEY['qrcode.pay']];
