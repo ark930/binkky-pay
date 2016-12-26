@@ -6,7 +6,7 @@ use App\Exceptions\APIException;
 use App\Libraries\Channel\Helper;
 use App\Models\Charge;
 
-class WechatQR extends WechatBase
+class WechatScan extends WechatBase
 {
     public function charge(Charge $charge)
     {
@@ -19,8 +19,8 @@ class WechatQR extends WechatBase
             'total_fee'        => $charge['amount'],
             'spbill_create_ip' => $charge['client_ip'],
             'time_start'       => date('YmdHis', strtotime($charge['created_at'])),
-            'notify_url'       => $this->getNotifyUrl(),
-            'trade_type'       => self::TRADE_TYPES['qr'],
+//            'auth_code'        => $charge['auth_code'],
+            'auth_code'        => '123',
         ];
 
         $req['product_id'] = $charge['product_id'];
@@ -28,7 +28,7 @@ class WechatQR extends WechatBase
         $req['sign'] = $this->signArray($req, $this->key);
         $reqXml = Helper::arrayToXml($req);
 
-        $res = $this->request($this->getUrl('pay'), $reqXml);
+        $res = $this->request($this->getUrl('scan.pay'), $reqXml);
 
         if ($res['return_code'] != 'SUCCESS')
         {
@@ -45,13 +45,7 @@ class WechatQR extends WechatBase
             throw new APIException('渠道请求失败');
         }
 
-        if (!isset($res['code_url']))
-        {
-            throw new APIException('渠道返回解析失败');
-        }
-
-        return [
-            'credential' => $res['code_url'],
-        ];
+        return $res;
     }
+
 }
