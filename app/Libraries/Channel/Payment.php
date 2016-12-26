@@ -11,8 +11,8 @@ use App\Libraries\Channel\Wechat\WechatPub;
 use App\Libraries\Channel\Wechat\WechatQR;
 use App\Libraries\Channel\Wechat\WechatScan;
 use App\Libraries\HttpClient;
-use App\Models\ChannelAlipay;
-use App\Models\ChannelWechat;
+use App\Models\Channel\Alipay as ChannelAlipay;
+use App\Models\Channel\Wechat as ChannelWechat;
 
 class Payment
 {
