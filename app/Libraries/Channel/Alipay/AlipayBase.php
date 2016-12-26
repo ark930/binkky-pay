@@ -5,11 +5,14 @@ namespace App\Libraries\Channel\Alipay;
 use App\Libraries\Channel\Helper;
 use App\Libraries\Channel\IPayment;
 use App\Libraries\HttpClient;
+use App\Libraries\HttpClientTrait;
 use App\Models\Charge;
 use App\Models\Refund;
 
 class AlipayBase implements IPayment
 {
+    use HttpClientTrait;
+
     const GATEWAY_URL = "https://openapi.alipay.com/gateway.do";
 
     const FORMAT_JSON = 'JSON';
@@ -97,7 +100,36 @@ class AlipayBase implements IPayment
 
     public function notify(Charge $charge, array $notify)
     {
-        return '';
+        $sign = $notify['sign'];
+        $signType = $notify['sign_type'];
+        Helper::removeKeys($notify, ['sign', 'sign_type']);
+        $signString = $this->getSignContent($notify);
+//        openssl_verify($signString, base64_decode($sign), $this->alipayPublicKey);
+
+        if($charge['amount'] === $notify['total_amount']) {
+
+        } else if($charge['order_no'] === $notify['out_trade_no']) {
+
+        } else if($charge['app_id'] === $notify['app_id']) {
+
+        } else if(isset($notify['seller_id']) && $charge['seller_id'] === $notify['seller_id']) {
+
+        } else if(isset($notify['seller_email']) && $charge['seller_email'] === $notify['seller_email']) {
+
+        }
+        if($notify['trade_status'] === 'TRADE_FINISHED' || $notify['trade_status'] === 'TRADE_SUCCESS') {
+            $charge['status'] = Charge::STATUS_SUCCEEDED;
+            $charge['paid_at'] = $notify['gmt_payment'];
+            $charge['transaction_no'] = $notify['trade_no'];
+            $charge->save();
+        } else if($notify['trade_status'] === 'TRADE_CLOSED') {
+            $charge['status'] = Charge::STATUS_CLOSED;
+            $charge['paid_at'] = $notify['gmt_payment'];
+            $charge['transaction_no'] = $notify['trade_no'];
+            $charge->save();
+        }
+
+        return $charge;
     }
 
     public function refund(Charge $charge, Refund $refund)

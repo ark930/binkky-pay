@@ -11,21 +11,28 @@
 |
 */
 
-$app->get('/', function () use ($app) {
-    return $app->version();
-});
-
+//$app->get('/', function () use ($app) {
+//    return $app->version();
+//});
+$app->get('/', 'ExampleController@test');
 
 $app->group(['prefix' => 'v1'], function() use ($app) {
     $app->post('charges', 'ChargeController@create');
-    $app->get('charges/{charge_id}', 'ChargeController@retrieve');
+    $app->get('charges/{charge_id}', 'ChargeController@query');
+//    $app->get('charges/{charge_id}/close', 'ChargeController@close');
+    $app->get('charges/{charge_id}/notify', 'ChargeController@notify');
+    $app->post('charges/{charge_id}/notify', 'ChargeController@notify');
 
     $app->post('refunds', 'RefundController@create');
-    $app->get('refunds/{refund_id}', 'RefundController@retrieve');
+    $app->get('refunds/{refund_id}', 'RefundController@query');
 
-    $app->group(['prefix' => 'notify'], function() use ($app) {
-        $app->get('charges/{charge_id}', 'ChargeController@notify');
-        $app->get('refunds/{refund_id}', 'RefundController@notify');
+//    $app->get('charges/bill', 'ChargeController@bill');
+
+    $app->group(['prefix' => 'channels'], function() use($app) {
+        $app->post('alipay', 'Channels\AlipayController@store');
+        $app->get('alipay', 'Channels\AlipayController@show');
+        $app->post('wechat', 'Channels\WechatController@store');
+        $app->get('wechat', 'Channels\WechatController@show');
     });
 });
 

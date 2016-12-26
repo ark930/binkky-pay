@@ -18,12 +18,14 @@ class AlipayWap extends AlipayBase
         ];
 
         $commonParams = $this->makeCommonParameters(self::METHODS['wap.pay'], $charge['created_at']);
-//        $commonParams['return_url'] = $charge['return_url'];
+        $commonParams['return_url'] = $charge['return_url'];
         $commonParams['notify_url'] = $this->makeNotifyUrl($charge['id']);
         $commonParams['biz_content'] = json_encode($bizContent);
 
         $requestUrl = $this->makeRequestUrl($commonParams);
 
-        return $requestUrl;
+        return [
+            'credential' => $requestUrl,
+        ];
     }
 }

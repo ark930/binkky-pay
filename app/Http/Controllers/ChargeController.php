@@ -10,20 +10,30 @@ class ChargeController extends Controller
 {
     public function create(Request $request)
     {
+        $this->validate($request, [
+            'channel' => 'required',
+            'type' => 'required',
+            'order_no' => 'required',
+            'amount' => 'required',
+            'currency' => 'required',
+            'body' => 'required',
+            'subject' => 'required',
+        ]);
+
         $charge = new Charge();
         $charge['channel'] = $request->input('channel');
         $charge['type'] = $request->input('type');
         $charge['order_no'] = $request->input('order_no');
         $charge['amount'] = $request->input('amount');
+        $charge['body'] = $request->input('body');
+        $charge['subject'] = $request->input('subject');
         $charge['currency'] = $request->input('currency');
         $charge->save();
 
         $payment = Payment::make($charge['channel'], $charge['type']);
-        $payUrl = $payment->charge($charge);
+        $data = $payment->charge($charge);
 
-        return response([
-            'credential' => $payUrl
-        ], 200);
+        return response($data, 200);
     }
 
     public function query($charge_id)
@@ -46,7 +56,7 @@ class ChargeController extends Controller
         $charge = Charge::findOrFail($charge_id);
         $channel = $charge['channel'];
         $status = $charge['status'];
-        if($status === 'finish' || $status === 'close') {
+        if($status === Charge::STATUS_SUCCEEDED || $status === Charge::STATUS_CLOSED) {
             return response('success', 200);
         }
 
@@ -54,6 +64,6 @@ class ChargeController extends Controller
         $payment = Payment::make($channel);
         $data = $payment->notify($charge, $notify);
 
-        return response('success', 200);
+        return response($data, 200);
     }
 }

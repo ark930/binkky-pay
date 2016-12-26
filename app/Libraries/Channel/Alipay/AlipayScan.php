@@ -2,6 +2,7 @@
 
 namespace App\Libraries\Channel\Alipay;
 
+use App\Exceptions\BadRequestException;
 use App\Models\Charge;
 
 class AlipayScan extends AlipayBase
@@ -27,6 +28,15 @@ class AlipayScan extends AlipayBase
 
         $requestUrl = $this->makeRequestUrl($commonParams);
 
-        return $requestUrl;
+        $this->initHttpClient('');
+        $res = $this->requestPlainText('GET', $requestUrl);
+        $res = \GuzzleHttp\json_decode($res, true);
+
+        $res = $res[self::RESPONSE_KEY['scan.pay']];
+        if($res['code'] === '10000' && $res['out_trade_no'] === $charge['order_no']) {
+            return $res['qr_code'];
+        }
+
+        throw new BadRequestException('请求失败:' . $res['code'] . '=>' . $res['sub_msg']);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Libraries\Channel\Alipay;
 
+use App\Exceptions\BadRequestException;
 use App\Models\Charge;
 
 class AlipayQR extends AlipayBase
@@ -22,6 +23,17 @@ class AlipayQR extends AlipayBase
 
         $requestUrl = $this->makeRequestUrl($commonParams);
 
-        return $requestUrl;
+        $this->initHttpClient('');
+        $res = $this->requestPlainText('GET', $requestUrl);
+        $res = \GuzzleHttp\json_decode($res, true);
+
+        $res = $res[self::RESPONSE_KEY['qrcode.pay']];
+        if($res['code'] === '10000' && $res['out_trade_no'] === $charge['order_no']) {
+            return [
+                'credential' => $res['qr_code'],
+            ];
+        }
+
+        throw new BadRequestException('请求失败:' . $res['code']);
     }
 }
