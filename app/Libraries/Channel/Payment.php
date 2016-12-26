@@ -10,7 +10,6 @@ use App\Libraries\Channel\Wechat\WechatBase;
 use App\Libraries\Channel\Wechat\WechatPub;
 use App\Libraries\Channel\Wechat\WechatQR;
 use App\Libraries\Channel\Wechat\WechatScan;
-use App\Libraries\HttpClient;
 use App\Models\Channel\Alipay as ChannelAlipay;
 use App\Models\Channel\Wechat as ChannelWechat;
 
@@ -32,13 +31,13 @@ class Payment
             $channelParams = ChannelAlipay::getPaymentParameters();
 
             if($paymentType === null) {
-                $payment = new AlipayBase($channelParams, new HttpClient());
+                $payment = new AlipayBase($channelParams);
             } if($paymentType === self::PAYMENT_WAP) {
-                $payment = new AlipayWap($channelParams, new HttpClient());
+                $payment = new AlipayWap($channelParams);
             } else if($paymentType === self::PAYMENT_QR) {
-                $payment = new AlipayQR($channelParams, new HttpClient());
+                $payment = new AlipayQR($channelParams);
             } else if($paymentType === self::PAYMENT_SCAN) {
-                $payment = new AlipayScan($channelParams, new HttpClient());
+                $payment = new AlipayScan($channelParams);
             }
         } else if($channelName === self::CHANNEL_WECHAT) {
             $channelParams = ChannelWechat::getPaymentParameters();

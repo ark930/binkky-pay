@@ -52,13 +52,13 @@ class AlipayBase implements IPayment
     protected $alipayPublicKey = null;
     protected $httpClient = null;
 
-    public function __construct($channelParams, HttpClient $httpClient)
+    public function __construct($channelParams)
     {
         $this->appId = $channelParams['appid'];
         $this->privateKey = $channelParams['private_key'];
         $this->alipayPublicKey = $channelParams['alipay_public_key'];
 
-        $this->httpClient = $httpClient;
+        $this->httpClient = new HttpClient();
     }
 
     public function charge(Charge $charge)

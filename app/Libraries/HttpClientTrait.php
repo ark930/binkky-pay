@@ -15,7 +15,7 @@ trait HttpClientTrait
     {
         $this->httpClient = new Client([
             'base_uri' => $baseUrl,
-            'timeout' => 5.0,
+            'timeout' => 10.0,
             'headers' => $headers
         ]);
     }
