@@ -1,23 +1,21 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Channel;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Redis;
 
-class ChannelAlipay extends Model
+abstract class Base extends Model
 {
     public static function getPaymentParameters()
     {
-        $data = Redis::command('HGETALL', ['alipay']);
+        $channelName = static::channelName();
+        $data = Redis::command('HGETALL', [$channelName]);
         if(empty($data)) {
-            $data = app('db')->table('channel_alipays')
-                ->select('appid', 'private_key', 'alipay_public_key')
-                ->first();
-
+            $data = static::getFromDatabase();
             $data = collect($data)->toArray();
 
-            $hashData = ['alipay'];
+            $hashData = [$channelName];
             foreach ($data as $k => $v) {
                 $hashData[] = $k;
                 $hashData[] = $v;
@@ -27,4 +25,8 @@ class ChannelAlipay extends Model
 
         return $data;
     }
+
+    abstract protected static function getFromDatabase();
+
+    abstract protected static function channelName();
 }
