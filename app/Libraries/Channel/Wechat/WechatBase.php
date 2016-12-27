@@ -31,11 +31,13 @@ class WechatBase extends IPayment
     ];
 
     protected $baseUrl;
-    protected $httpClient = null;
+    protected $httpClient;
 
     protected $appId;
     protected $mchId;
     protected $key;
+
+    protected $credential;
 
     public function __construct($channelParams)
     {
@@ -49,7 +51,10 @@ class WechatBase extends IPayment
 
     public function charge(Charge $charge)
     {
-
+        return [
+            'charge' => Charge::find($charge['id']),
+            'credential' => $this->credential,
+        ];
     }
 
     public function query(Charge $charge)
@@ -86,6 +91,8 @@ class WechatBase extends IPayment
             }
             throw new APIException('渠道请求失败');
         }
+
+        return $charge;
     }
 
     public function notify(Charge $charge, array $notify)
@@ -307,4 +314,14 @@ class WechatBase extends IPayment
     {
         return env('NOTIFY_BASE_URL') . '/charges/%s/notify';
     }
+
+    protected function formatTime($time)
+    {
+        if(empty($time)) {
+            return null;
+        }
+
+        return date('YmdHis', strtotime($time));
+    }
+
 }

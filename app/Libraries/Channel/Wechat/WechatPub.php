@@ -24,8 +24,6 @@ class WechatPub extends WechatBase
             'openid'           => '123',
         ];
 
-        $req['product_id'] = $charge['product_id'];
-
         $req['sign'] = $this->signArray($req, $this->key);
         $reqXml = Helper::arrayToXml($req);
 
@@ -46,7 +44,8 @@ class WechatPub extends WechatBase
             throw new APIException('渠道请求失败');
         }
 
-        return $res;
+        $this->credential = $res['prepay_id'];
+        return parent::charge($charge);
     }
 
 }

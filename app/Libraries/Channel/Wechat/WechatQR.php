@@ -18,7 +18,8 @@ class WechatQR extends WechatBase
             'out_trade_no'     => $charge['order_no'],
             'total_fee'        => $charge['amount'],
             'spbill_create_ip' => $charge['client_ip'],
-            'time_start'       => date('YmdHis', strtotime($charge['created_at'])),
+            'time_start'       => $this->formatTime($charge['created_at']),
+            'time_expire'      => $this->formatTime($charge['expired_at']),
             'notify_url'       => $this->makeNotifyUrl($charge['id']),
             'trade_type'       => self::TRADE_TYPES['qr'],
         ];
@@ -50,8 +51,7 @@ class WechatQR extends WechatBase
             throw new APIException('渠道返回解析失败');
         }
 
-        return [
-            'credential' => $res['code_url'],
-        ];
+        $this->credential = $res['code_url'];
+        return parent::charge($charge);
     }
 }

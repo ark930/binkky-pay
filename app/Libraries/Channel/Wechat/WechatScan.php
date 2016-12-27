@@ -18,7 +18,8 @@ class WechatScan extends WechatBase
             'out_trade_no'     => $charge['order_no'],
             'total_fee'        => $charge['amount'],
             'spbill_create_ip' => $charge['client_ip'],
-            'time_start'       => date('YmdHis', strtotime($charge['created_at'])),
+            'time_start'       => $this->formatTime($charge['created_at']),
+            'time_expire'      => $this->formatTime($charge['expired_at']),
             'auth_code'        => $charge['auth_code'],
         ];
 
@@ -48,7 +49,7 @@ class WechatScan extends WechatBase
         $charge['paid_at'] = date('Y-m-d H:i:s', strtotime($res['time_end']));
         $charge->save();
 
-        return Charge::find($charge['id']);
+        return parent::charge($charge);
     }
 
 }

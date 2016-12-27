@@ -31,9 +31,15 @@ class ChargeController extends Controller
         $charge['currency'] = $request->input('currency');
         $charge['client_ip'] = $request->input('client_ip');
 
+        if($request->has('expired_at')) {
+            $charge['expired_at'] = $request->input('expired_at');
+        }
         if($charge['type'] == Charge::TYPE_SCAN) {
             $charge['auth_code'] = $request->input('auth_code');
         }
+//        else if($charge['type'] == Charge::TYPE_PUB) {
+//            $charge['auth_code'] = $request->input('openid');
+//        }
         $charge->save();
 
         if($request->hasHeader('X-Testing') && $request->header('X-Testing') == 'true') {
