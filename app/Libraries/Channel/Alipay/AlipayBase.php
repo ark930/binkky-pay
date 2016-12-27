@@ -8,7 +8,7 @@ use App\Libraries\HttpClient;
 use App\Models\Charge;
 use App\Models\Refund;
 
-class AlipayBase implements IPayment
+class AlipayBase extends IPayment
 {
     const GATEWAY_URL = "https://openapi.alipay.com/gateway.do";
 

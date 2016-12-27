@@ -28,6 +28,7 @@ class CreateChargesTable extends Migration
             $table->string('body', 128)->comment('支付描述');
             $table->enum('currency', ['cny'])->comment('货币类型');
             $table->enum('status', ['pending', 'succeeded', 'failed', 'closed'])->comment('支付状态');
+            $table->string('client_ip', 15)->comment('客户端IP');
             $table->timestamp('paid_at')->nullable()->comment('支付完成时间');
             $table->timestamp('expired_at')->nullable()->comment('支付过期时间');
             $table->string('auth_code')->nullable()->comment('刷卡支付用户支付授权码');

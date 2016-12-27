@@ -20,7 +20,7 @@ $app->group(['prefix' => 'v1'], function() use ($app) {
     $app->post('charges', 'ChargeController@create');
     $app->get('charges/{charge_id}', 'ChargeController@query');
 //    $app->get('charges/{charge_id}/close', 'ChargeController@close');
-    $app->get('charges/{charge_id}/notify', 'ChargeController@notify');
+    $app->get('charges/{charge_id}/notify', ['as' => 'notify', 'uses' => 'ChargeController@notify']);
     $app->post('charges/{charge_id}/notify', 'ChargeController@notify');
 
     $app->post('refunds', 'RefundController@create');

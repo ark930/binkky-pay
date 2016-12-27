@@ -19,7 +19,7 @@ class WechatQR extends WechatBase
             'total_fee'        => $charge['amount'],
             'spbill_create_ip' => $charge['client_ip'],
             'time_start'       => date('YmdHis', strtotime($charge['created_at'])),
-            'notify_url'       => $this->getNotifyUrl(),
+            'notify_url'       => $this->makeNotifyUrl($charge['id']),
             'trade_type'       => self::TRADE_TYPES['qr'],
         ];
 
@@ -42,7 +42,7 @@ class WechatQR extends WechatBase
             {
                 throw new APIException('订单号已使用');
             }
-            throw new APIException('渠道请求失败');
+            throw new APIException('渠道请求失败:' . $res['err_code'] . '/' . $res['err_code_des']);
         }
 
         if (!isset($res['code_url']))

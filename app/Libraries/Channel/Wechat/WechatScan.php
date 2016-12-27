@@ -39,7 +39,7 @@ class WechatScan extends WechatBase
             {
                 throw new APIException('订单号已使用');
             }
-            throw new APIException('渠道请求失败:' . $res['err_code_des']);
+            throw new APIException('渠道请求失败:' . $res['err_code'] . '/' . $res['err_code_des']);
         }
 
         $charge['transaction_no'] = $res['transaction_id'];

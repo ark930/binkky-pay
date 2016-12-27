@@ -9,7 +9,7 @@ use App\Libraries\HttpClient;
 use App\Models\Charge;
 use App\Models\Refund;
 
-class WechatBase implements IPayment
+class WechatBase extends IPayment
 {
     const BASE_URL = 'https://api.mch.weixin.qq.com';
     const BASE_URL_TESTING = 'https://api.mch.weixin.qq.com/sandboxnew';
@@ -305,6 +305,6 @@ class WechatBase implements IPayment
 
     protected function getNotifyUrl()
     {
-        return 'http://www.baidu.com';
+        return env('NOTIFY_BASE_URL') . '/charges/%s/notify';
     }
 }

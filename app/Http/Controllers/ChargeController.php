@@ -18,6 +18,7 @@ class ChargeController extends Controller
             'currency' => 'required',
             'body' => 'required',
             'subject' => 'required',
+            'client_ip' => 'required',
         ]);
 
         $charge = new Charge();
@@ -28,6 +29,7 @@ class ChargeController extends Controller
         $charge['body'] = $request->input('body');
         $charge['subject'] = $request->input('subject');
         $charge['currency'] = $request->input('currency');
+        $charge['client_ip'] = $request->input('client_ip');
 
         if($charge['type'] == Charge::TYPE_SCAN) {
             $charge['auth_code'] = $request->input('auth_code');
