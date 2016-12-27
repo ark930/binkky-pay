@@ -42,12 +42,9 @@ class WechatBase implements IPayment
         $this->appId = $channelParams['appid'];
         $this->mchId = $channelParams['mch_id'];
         $this->key = $channelParams['key'];
-//        $this->key = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ123456';
-
-        $this->baseUrl = self::BASE_URL_TESTING;
-        $this->baseUrl = self::BASE_URL;
 
         $this->httpClient = new HttpClient();
+        $this->baseUrl = self::BASE_URL;
     }
 
     public function charge(Charge $charge)
@@ -60,6 +57,7 @@ class WechatBase implements IPayment
         $req = [
             'appid'             => $this->appId,
             'mch_id'            => $this->mchId,
+            'sub_mch_id'        => $this->mchId,
             'nonce_str'         => $this->generateNonceString($charge['order_no']),
         ];
 
@@ -156,8 +154,12 @@ class WechatBase implements IPayment
         }
 
         $this->verifyResponse($res, $this->key);
+    }
 
-        print_r($res);
+    public function setTesting()
+    {
+        $this->baseUrl = self::BASE_URL_TESTING;
+        $this->key = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ123456';
     }
 
     protected function generateNonceString($seed)
@@ -240,8 +242,7 @@ class WechatBase implements IPayment
 
     protected function getBaseUrl()
     {
-        return self::BASE_URL;
-//        return self::BASE_URL_TESTING;
+        return $this->baseUrl;
     }
 
     protected function getUrl($action)

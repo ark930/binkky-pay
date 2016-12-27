@@ -28,9 +28,18 @@ class ChargeController extends Controller
         $charge['body'] = $request->input('body');
         $charge['subject'] = $request->input('subject');
         $charge['currency'] = $request->input('currency');
+
+        if($charge['type'] == Charge::TYPE_SCAN) {
+            $charge['auth_code'] = $request->input('auth_code');
+        }
         $charge->save();
 
-        $payment = Payment::make($charge['channel'], $charge['type']);
+        if($request->hasHeader('X-Testing') && $request->header('X-Testing') == 'true') {
+            $payment = Payment::makeTesting($charge['channel'], $charge['type']);
+        } else {
+            $payment = Payment::make($charge['channel'], $charge['type']);
+        }
+
         $data = $payment->charge($charge);
 
         return response($data, 200);

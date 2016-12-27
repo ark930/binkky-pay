@@ -23,7 +23,7 @@ class Payment
     const PAYMENT_WAP = 'wap';
     const PAYMENT_PUB = 'pub';
 
-    public static function make($channelName, $paymentType = null)
+    public static function make($channelName, $paymentType = null, $isTesting = false)
     {
         $payment = null;
 
@@ -53,6 +53,15 @@ class Payment
             }
         }
 
+        if(!is_null($payment) && $isTesting === true) {
+            $payment->setTesting();
+        }
+
         return $payment;
+    }
+
+    public static function makeTesting($channelName, $paymentType = null)
+    {
+        return static::make($channelName, $paymentType, true);
     }
 }

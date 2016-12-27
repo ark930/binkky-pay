@@ -4,7 +4,7 @@ namespace App\Models\Channel;
 
 class Wechat extends Base
 {
-    protected $channelName = 'wechat';
+    protected $table = 'channel_wechats';
 
     protected static function getFromDatabase()
     {
