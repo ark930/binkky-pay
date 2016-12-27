@@ -19,11 +19,8 @@ class WechatScan extends WechatBase
             'total_fee'        => $charge['amount'],
             'spbill_create_ip' => $charge['client_ip'],
             'time_start'       => date('YmdHis', strtotime($charge['created_at'])),
-//            'auth_code'        => $charge['auth_code'],
-            'auth_code'        => '123',
+            'auth_code'        => $charge['auth_code'],
         ];
-
-        $req['product_id'] = $charge['product_id'];
 
         $req['sign'] = $this->signArray($req, $this->key);
         $reqXml = Helper::arrayToXml($req);
@@ -42,10 +39,16 @@ class WechatScan extends WechatBase
             {
                 throw new APIException('订单号已使用');
             }
-            throw new APIException('渠道请求失败');
+            throw new APIException('渠道请求失败:' . $res['err_code_des']);
         }
 
-        return $res;
+        $charge['transaction_no'] = $res['transaction_id'];
+        $charge['amount_settled'] = $res['cash_fee'];
+        $charge['status'] = Charge::STATUS_SUCCEEDED;
+        $charge['paid_at'] = date('Y-m-d H:i:s', strtotime($res['time_end']));
+        $charge->save();
+
+        return Charge::find($charge['id']);
     }
 
 }
