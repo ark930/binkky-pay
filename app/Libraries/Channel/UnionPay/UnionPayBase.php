@@ -41,15 +41,13 @@ class UnionPayBase extends IPayment
     // 银联参数变量
     protected $merId;
     protected $certId;
-    protected $cert;
-    protected $certPassword;
+    protected $certPrivateKey;
 
     public function __construct($channelParams)
     {
         $this->merId = $channelParams['mer_id'];
         $this->certId = $channelParams['cert_id'];
-        $this->cert = $channelParams['cert'];
-        $this->certPassword = $channelParams['cert_password'];
+        $this->certPrivateKey = $channelParams['cert_private_key'];
 
         $this->baseUrl = self::BASE_URL;
         parent::__construct();
@@ -62,32 +60,34 @@ class UnionPayBase extends IPayment
         // 银联测试参数
         $this->merId = '777290058110048';
         $this->certId = '68759663125';
-        $this->cert = '-----BEGIN CERTIFICATE-----
-MIIESjCCAzKgAwIBAgIFEAJlMhUwDQYJKoZIhvcNAQEFBQAwWDELMAkGA1UEBhMC
-Q04xMDAuBgNVBAoTJ0NoaW5hIEZpbmFuY2lhbCBDZXJ0aWZpY2F0aW9uIEF1dGhv
-cml0eTEXMBUGA1UEAxMOQ0ZDQSBURVNUIE9DQTEwHhcNMTUxMjE2MDgyNTA3WhcN
-MTgxMjE2MDgyNTA3WjCBiDELMAkGA1UEBhMCY24xFzAVBgNVBAoTDkNGQ0EgVEVT
-VCBPQ0ExMRIwEAYDVQQLEwlDRkNBIFRFU1QxFDASBgNVBAsTC0VudGVycHJpc2Vz
-MTYwNAYDVQQDFC0wNDFAWjIwMTQtMTEtMTFANzAwMDAwMDAwMDAwMDAxOlNJR05A
-MDAwMDAwMDYwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDZgpE+JFjx
-fSAQz7haGrCD62/babFa/8cDnlGKlfpvl0fClz7rNyyJ8XgRDwzXx+7IAl5xANuQ
-SrqFEbyhtrcmMZE6xULpW7peDmTtggC6eLVZ04eFh3FeVw26zlk3BhS7ZEcifJi7
-gPwgIW36YlsJNkm8kq45g5MnysXqeodQ9BsWmIJw7rCy7b4IWcsPrsTZ3dEQVbP6
-/sAxXjeRx6xrSbmUFDlLYqP3+RTv2sx+poBto/i9AqV/yi2B54Ev8hr5p4C9PVoL
-1SoE4DijWgZigJtBf5YfPuJ9wRk5JbYKF4SeQ+hV0l0bPLd/nsxP1kSmG7eRQ6DJ
-LzhSnuuj+8vjAgMBAAGjgekwgeYwHwYDVR0jBBgwFoAUz3CdYeudfC6498sCQPcJ
-nf4zdIAwSAYDVR0gBEEwPzA9BghggRyG7yoBATAxMC8GCCsGAQUFBwIBFiNodHRw
-Oi8vd3d3LmNmY2EuY29tLmNuL3VzL3VzLTE0Lmh0bTA4BgNVHR8EMTAvMC2gK6Ap
-hidodHRwOi8vdWNybC5jZmNhLmNvbS5jbi9SU0EvY3JsNDUyNi5jcmwwCwYDVR0P
-BAQDAgPoMB0GA1UdDgQWBBQmnndv0H4naGdnCtQkt9LXR2s0XTATBgNVHSUEDDAK
-BggrBgEFBQcDAjANBgkqhkiG9w0BAQUFAAOCAQEAr/678pvZ5/8f0P1nrSyS16Pa
-Eejk32Flq5vKQ+ifgI/C4vG8wOTxKDzERTqi1OLsswy7++WegJWhQ577U7OcEpw+
-teRTiYDnq0jrVxWR2yTtwKeb/H3ksJuk8S0angmHLePinfrhs8khn4Zu/7lfqJXg
-ckCh1nKX0CilrR83e9BBXBnM8XfRfWFvPoJk2EALF4eP53Vca7G4QX/82WU0iCTa
-zD441mqUl+jdP1yKSFp84vmYqUKq6/73Tik2AExRGNNp90AYErtNS3eza6pjdwbY
-N/qcw7dAhbijB1978k0FJ8LwiEQ8rIXhxS+AxYVSAWxSAFkDA2V00NnQSHyBSA==
------END CERTIFICATE-----';
-        $this->certPassword = '000000';
+        $this->certPrivateKey = '-----BEGIN PRIVATE KEY-----
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDZgpE+JFjxfSAQ
+z7haGrCD62/babFa/8cDnlGKlfpvl0fClz7rNyyJ8XgRDwzXx+7IAl5xANuQSrqF
+EbyhtrcmMZE6xULpW7peDmTtggC6eLVZ04eFh3FeVw26zlk3BhS7ZEcifJi7gPwg
+IW36YlsJNkm8kq45g5MnysXqeodQ9BsWmIJw7rCy7b4IWcsPrsTZ3dEQVbP6/sAx
+XjeRx6xrSbmUFDlLYqP3+RTv2sx+poBto/i9AqV/yi2B54Ev8hr5p4C9PVoL1SoE
+4DijWgZigJtBf5YfPuJ9wRk5JbYKF4SeQ+hV0l0bPLd/nsxP1kSmG7eRQ6DJLzhS
+nuuj+8vjAgMBAAECggEBAIF/7k+sPlRQ5gV8Vss2tr9kLm3ZCKIgRPIPkYbMcpV7
+4Vqmx+wtJlRestidOE1EmRL17hqjoxXOmCxf+gniCjswKcJu7b6YQWZ8dXS/AQYE
+lhyMB1Tl5gaAGAmPj6hl83P6aSvMOPbx/ap3nM4FPyRF8TLXtelCQBvh62IGX4g/
+JML4nDXkpQ4Oq8fO1x+Oi2OiJZQLT+h3OsRzb5Wa94q9FfaGCb+87V2Wa7lNjxdZ
+IfzrA97ldHFrVaEltfK8FKPiCD/Dk+Q9eSybtexMh8339VybGVFW3THB++X3lgYs
+wkb+KXTkpkA/vyhFEkPLWhvAHor9nhY+73u5YDkHShkCgYEA8uNMaqyGOuOSjr+s
+vLyyLjlju9RR7IErQZbhQspZTgjMud/TsFyWdjBpoDTs8+T1PGMT01j06H/f4w+W
+Z/SKLQAI87PDq+KDXAeKvz/JHXQ2iSDH/mHe7Ml1iQnSqHd37PjMCk9f9n4MC/4X
+Ox1JdfZR8rPd+SzqshSmI8wd4j8CgYEA5UCMPoM7ouy7LaqxHhtrAJI6ydrckKJ9
+X+Ms0IDl1CX6v0P0ovRvfgJtHTj+uzVGu/EFfT+easrWw+YdU2lHlqLzsOFtveHt
+jSDAGue+41ZwT+oqsPNPlIvaQjV0qHUnOsWUu3mfdc9Lt8gEuDJFOoBZ77n8oJJL
+gchrxHYypV0CgYEA5okPcwCltydhZ9ROJCYGCRG3tAPmblB7uhl3XWmqMgLwLkxg
+JLj8ptl0p/cUILpkehigLK32ZudYna+h1rGopOWvmYA6bN7mR2dxLe1g+m/fg3B1
+4uEKMj1VLekA5Z3fWjEbmX2VW+RvksJtUlKN80UEqxRFz8fuS3CF8NxAUQkCgYBA
+fXv2SeyI1JeDLTVOBuB+9KPdDNhnR46FXt7IeLouh9CV5YP4I1MJ25zeT545A6+2
+RwMITNE/sXfg++bcBA3DbmunIoNAm0G8Ja5k4zRrt3E4yeLgjFGitATeAzOh//Ld
+MZ+5bWlSNtJSDM5nEp0u69Rg/6z1brIW/E50odt1cQKBgG4pVWf3y3M5L1Y+wQx3
+3xzHSsu//GQDRJjbiEtzNjQK822g6YRWjN20p3CDeaJpPRIUH062eSJoNNSGVGtq
+hk75g2vUSxYOs9AT25a0sb7IHHi+COOHQfpB8xWjt0PJCccGiYQiKqqNU5pGkzUQ
+8eoxsUyQX3A5791s2EK6csEq
+-----END PRIVATE KEY-----';
     }
 
     public function query(Charge $charge)

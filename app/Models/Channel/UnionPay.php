@@ -9,7 +9,7 @@ class UnionPay extends Base
     protected static function getFromDatabase()
     {
         $data = app('db')->table('channel_union_pays')
-            ->select('mer_id', 'cert_id', 'cert', 'cert_password')
+            ->select('mer_id', 'cert_id', 'cert_private_key')
             ->first();
 
         return $data;

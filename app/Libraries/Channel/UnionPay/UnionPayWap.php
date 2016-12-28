@@ -32,7 +32,7 @@ class UnionPayWap extends UnionPayBase
 
         $req['frontUrl'] = 'http://www.baidu.com';
 
-        $req = $this->signArray($req, $this->cert);
+        $req = $this->signArray($req, $this->certPrivateKey);
 
         $this->credential = $req;
         return parent::charge($charge);
