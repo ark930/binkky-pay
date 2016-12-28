@@ -14,7 +14,7 @@ class UnionPayBase extends IPayment
 
     const VERSION_5_0_0 = '5.0.0';
     const ENCODING = 'UTF-8';
-    const SIGN_TYPE_RSA = 'RSA';
+    const SIGN_TYPE_RSA = '01';
     const CURRENCY_CODES = [
         'cny' => '156',
     ];
@@ -116,7 +116,7 @@ hk75g2vUSxYOs9AT25a0sb7IHHi+COOHQfpB8xWjt0PJCccGiYQiKqqNU5pGkzUQ
         ksort($signArray);
         $signString = Helper::joinToString($signArray);
 
-        openssl_sign($signString, $sign, $privateKey);
+        openssl_sign(sha1($signString), $sign, $privateKey);
         $signArray['signature'] = base64_encode($sign);
 
         return $signArray;
