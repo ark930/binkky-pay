@@ -8,7 +8,7 @@ class RefundTest extends TestCase
             ->seeStatusCode(200);
     }
 
-    public function testRetrieve()
+    public function testQuery()
     {
         $this->json('GET', '/v1/refunds/1')
             ->seeStatusCode(200);
