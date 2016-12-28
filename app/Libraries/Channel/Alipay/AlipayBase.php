@@ -67,10 +67,10 @@ class AlipayBase extends IPayment
 
     public function query(Charge $charge)
     {
-        if(!empty($charge['transaction_no'])) {
-            $bizContent['trade_no'] = $charge['transaction_no'];
+        if(!empty($charge['tn'])) {
+            $bizContent['trade_no'] = $charge['tn'];
         } else {
-            $bizContent['out_trade_no'] = $charge['order_no'];
+            $bizContent['out_trade_no'] = $charge['trade_no'];
         }
 
         $requestUrl = $this->makeRequest(self::METHODS['query'], $bizContent);
@@ -84,7 +84,7 @@ class AlipayBase extends IPayment
             if($data['trade_status'] === 'TRADE_FINISHED' || $data['trade_status'] === 'TRADE_SUCCESS') {
                 $charge['status'] = Charge::STATUS_SUCCEEDED;
                 $charge['paid_at'] = $data['send_pay_date'];
-                $charge['transaction_no'] = $data['trade_no'];
+                $charge['tn'] = $data['trade_no'];
                 $charge->save();
             }
         } else {
@@ -105,7 +105,7 @@ class AlipayBase extends IPayment
 
         if($charge['amount'] === $notify['total_amount']) {
 
-        } else if($charge['order_no'] === $notify['out_trade_no']) {
+        } else if($charge['trade_no'] === $notify['out_trade_no']) {
 
         } else if($charge['app_id'] === $notify['app_id']) {
 
@@ -117,12 +117,12 @@ class AlipayBase extends IPayment
         if($notify['trade_status'] === 'TRADE_FINISHED' || $notify['trade_status'] === 'TRADE_SUCCESS') {
             $charge['status'] = Charge::STATUS_SUCCEEDED;
             $charge['paid_at'] = $notify['gmt_payment'];
-            $charge['transaction_no'] = $notify['trade_no'];
+            $charge['tn'] = $notify['trade_no'];
             $charge->save();
         } else if($notify['trade_status'] === 'TRADE_CLOSED') {
             $charge['status'] = Charge::STATUS_CLOSED;
             $charge['paid_at'] = $notify['gmt_payment'];
-            $charge['transaction_no'] = $notify['trade_no'];
+            $charge['tn'] = $notify['trade_no'];
             $charge->save();
         }
 
@@ -140,10 +140,10 @@ class AlipayBase extends IPayment
 //            'terminal_id'       => $refund['terminal_id'],
         ];
 
-        if(!empty($charge['transaction_no'])) {
-            $bizContent['trade_no'] = $charge['transaction_no'];
+        if(!empty($charge['tn'])) {
+            $bizContent['trade_no'] = $charge['tn'];
         } else {
-            $bizContent['out_trade_no'] = $charge['order_no'];
+            $bizContent['out_trade_no'] = $charge['trade_no'];
         }
 
         $requestUrl = $this->makeRequest(self::METHODS['refund'], $bizContent, $refund['created_at']);
@@ -158,12 +158,12 @@ class AlipayBase extends IPayment
 
     public function refundQuery(Charge $charge, Refund $refund)
     {
-        $bizContent['out_request_no'] = $charge['order_no'];
+        $bizContent['out_request_no'] = $charge['trade_no'];
 
-        if(!empty($charge['transaction_no'])) {
-            $bizContent['trade_no'] = $charge['transaction_no'];
+        if(!empty($charge['tn'])) {
+            $bizContent['trade_no'] = $charge['tn'];
         } else {
-            $bizContent['out_trade_no'] = $charge['order_no'];
+            $bizContent['out_trade_no'] = $charge['trade_no'];
         }
 
         $requestUrl = $this->makeRequest(self::METHODS['refund.query'], $bizContent);
@@ -180,10 +180,10 @@ class AlipayBase extends IPayment
     {
         $bizContent['operator_id'] = $charge['operator_id'];
 
-        if(!empty($charge['transaction_no'])) {
-            $bizContent['trade_no'] = $charge['transaction_no'];
+        if(!empty($charge['tn'])) {
+            $bizContent['trade_no'] = $charge['tn'];
         } else {
-            $bizContent['out_trade_no'] = $charge['order_no'];
+            $bizContent['out_trade_no'] = $charge['trade_no'];
         }
 
         $requestUrl = $this->makeRequest(self::METHODS['close'], $bizContent);
@@ -193,10 +193,10 @@ class AlipayBase extends IPayment
 
     public function cancel(Charge $charge)
     {
-        if(!empty($charge['transaction_no'])) {
-            $bizContent['trade_no'] = $charge['transaction_no'];
+        if(!empty($charge['tn'])) {
+            $bizContent['trade_no'] = $charge['tn'];
         } else {
-            $bizContent['out_trade_no'] = $charge['order_no'];
+            $bizContent['out_trade_no'] = $charge['trade_no'];
         }
 
         $requestUrl = $this->makeRequest(self::METHODS['cancel'], $bizContent);
@@ -211,10 +211,10 @@ class AlipayBase extends IPayment
             'operator_id'       => $charge['operator_id'],
         ];
 
-        if(!empty($charge['transaction_no'])) {
-            $bizContent['trade_no'] = $charge['transaction_no'];
+        if(!empty($charge['tn'])) {
+            $bizContent['trade_no'] = $charge['tn'];
         } else {
-            $bizContent['out_trade_no'] = $charge['order_no'];
+            $bizContent['out_trade_no'] = $charge['trade_no'];
         }
 
         $requestUrl = $this->makeRequest(self::METHODS['cancel'], $bizContent);

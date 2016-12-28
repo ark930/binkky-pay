@@ -13,9 +13,9 @@ class WechatQR extends WechatBase
         $req = [
             'appid'            => $this->appId,
             'mch_id'           => $this->mchId,
-            'nonce_str'        => $this->generateNonceString($charge['order_no']),
-            'body'             => $charge['body'],
-            'out_trade_no'     => $charge['order_no'],
+            'nonce_str'        => $this->generateNonceString($charge['trade_no']),
+            'body'             => $charge['title'],
+            'out_trade_no'     => $charge['trade_no'],
             'total_fee'        => $charge['amount'],
             'spbill_create_ip' => $charge['client_ip'],
             'time_start'       => $this->formatTime($charge['created_at']),

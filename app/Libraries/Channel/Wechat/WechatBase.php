@@ -63,13 +63,13 @@ class WechatBase extends IPayment
             'appid'             => $this->appId,
             'mch_id'            => $this->mchId,
             'sub_mch_id'        => $this->mchId,
-            'nonce_str'         => $this->generateNonceString($charge['order_no']),
+            'nonce_str'         => $this->generateNonceString($charge['trade_no']),
         ];
 
-        if(!empty($charge['transaction_no'])) {
-            $req['transaction_id'] = $charge['transaction_no'];
+        if(!empty($charge['tn'])) {
+            $req['transaction_id'] = $charge['tn'];
         } else {
-            $req['out_trade_no'] = $charge['order_no'];
+            $req['out_trade_no'] = $charge['trade_no'];
         }
 
         $req['sign'] = $this->signArray($req, $this->key);
@@ -105,8 +105,8 @@ class WechatBase extends IPayment
         $req = [
             'appid'             => $this->appId,
             'mch_id'            => $this->mchId,
-            'nonce_str'         => $this->generateNonceString($charge['out_trade_no']),
-            'transaction_id'    => $charge['transaction_id'],
+            'nonce_str'         => $this->generateNonceString($charge['trade_no']),
+            'transaction_id'    => $charge['tn'],
 //            'out_trade_no'      => $charge['out_trade_no'],
 //            'out_refund_no'     => $refund['out_refund_no'],
 //            'total_fee'         => $charge['total_fee'],
@@ -120,7 +120,7 @@ class WechatBase extends IPayment
         $req = [
             'appid'             => $this->appId,
             'mch_id'            => $this->mchId,
-            'nonce_str'         => $this->generateNonceString($charge['out_trade_no']),
+            'nonce_str'         => $this->generateNonceString($charge['trade_no']),
             'transaction_id'    => $charge['transaction_id'],
             'out_trade_no'      => $charge['out_trade_no'],
             'out_refund_no'     => $refund['out_refund_no'],

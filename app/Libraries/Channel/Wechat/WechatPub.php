@@ -13,15 +13,15 @@ class WechatPub extends WechatBase
         $req = [
             'appid'            => $this->appId,
             'mch_id'           => $this->mchId,
-            'nonce_str'        => $this->generateNonceString($charge['order_no']),
-            'body'             => $charge['body'],
-            'out_trade_no'     => $charge['order_no'],
+            'nonce_str'        => $this->generateNonceString($charge['trade_no']),
+            'body'             => $charge['title'],
+            'out_trade_no'     => $charge['trade_no'],
             'total_fee'        => $charge['amount'],
             'spbill_create_ip' => $charge['client_ip'],
             'time_start'       => date('YmdHis', strtotime($charge['created_at'])),
             'notify_url'       => $this->makeNotifyUrl($charge['id']),
             'trade_type'       => self::TRADE_TYPES['pub'],
-            'openid'           => '123',
+            'openid'           => $charge['auth_code'],
         ];
 
         $req['sign'] = $this->signArray($req, $this->key);

@@ -13,9 +13,9 @@ class AlipayScan extends AlipayBase
     public function charge(Charge $charge)
     {
         $bizContent = [
-            'subject'           => $charge['subject'],
-            'body'              => $charge['body'],
-            'out_trade_no'      => $charge['order_no'],
+            'subject'           => $charge['title'],
+            'body'              => $charge['desc'],
+            'out_trade_no'      => $charge['trade_no'],
             'timeout_express'   => $this->makeExpiredTime($charge['expired_at']),
             'total_amount'      => $this->formatAmount($charge['amount']),
             'scene'             => self::SCENE_BAR_CODE,
@@ -33,7 +33,7 @@ class AlipayScan extends AlipayBase
         $res = \GuzzleHttp\json_decode($res, true);
 
         $res = $res[self::RESPONSE_KEY['scan.pay']];
-        if($res['code'] === '10000' && $res['out_trade_no'] === $charge['order_no']) {
+        if($res['code'] === '10000' && $res['out_trade_no'] === $charge['trade_no']) {
             return $res['qr_code'];
         }
 

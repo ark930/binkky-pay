@@ -10,24 +10,31 @@ class ChargeController extends Controller
 {
     public function create(Request $request)
     {
+        // 参数验证
         $this->validate($request, [
-            'channel' => 'required',
-            'type' => 'required',
-            'order_no' => 'required',
-            'amount' => 'required',
-            'currency' => 'required',
-            'body' => 'required',
-            'subject' => 'required',
-            'client_ip' => 'required',
+            // 必要参数
+            'channel'       => 'required|in:alipay,wechat',
+            'type'          => 'required|in:qr,scan,wap,pub',
+            'trade_no'      => 'required|min:8',
+            'amount'        => 'required|integer',
+            'currency'      => 'required|alpha',
+            'title'         => 'required',
+            'desc'          => 'required',
+            'client_ip'     => 'required|ip',
+
+            // 可选参数
+            'expired_at'    => 'filled|date',
+            'auth_code'     => 'filled',
+            'open_id'       => 'filled',
         ]);
 
         $charge = new Charge();
         $charge['channel'] = $request->input('channel');
         $charge['type'] = $request->input('type');
-        $charge['order_no'] = $request->input('order_no');
+        $charge['trade_no'] = $request->input('trade_no');
         $charge['amount'] = $request->input('amount');
-        $charge['body'] = $request->input('body');
-        $charge['subject'] = $request->input('subject');
+        $charge['title'] = $request->input('title');
+        $charge['desc'] = $request->input('desc');
         $charge['currency'] = $request->input('currency');
         $charge['client_ip'] = $request->input('client_ip');
 
@@ -35,11 +42,17 @@ class ChargeController extends Controller
             $charge['expired_at'] = $request->input('expired_at');
         }
         if($charge['type'] == Charge::TYPE_SCAN) {
+            $this->validate($request, [
+                'auth_code' => 'required',
+            ]);
             $charge['auth_code'] = $request->input('auth_code');
         }
-//        else if($charge['type'] == Charge::TYPE_PUB) {
-//            $charge['auth_code'] = $request->input('openid');
-//        }
+        else if($charge['type'] == Charge::TYPE_PUB) {
+            $this->validate($request, [
+                'open_id' => 'required',
+            ]);
+            $charge['auth_code'] = $request->input('open_id');
+        }
         $charge->save();
 
         if($request->hasHeader('X-Testing') && $request->header('X-Testing') == 'true') {
