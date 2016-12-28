@@ -30,14 +30,9 @@ class WechatBase extends IPayment
         'pub' => 'JSAPI',
     ];
 
-    protected $baseUrl;
-    protected $httpClient;
-
     protected $appId;
     protected $mchId;
     protected $key;
-
-    protected $credential;
 
     public function __construct($channelParams)
     {
@@ -49,12 +44,10 @@ class WechatBase extends IPayment
         $this->baseUrl = self::BASE_URL;
     }
 
-    public function charge(Charge $charge)
+    public function setTesting()
     {
-        return [
-            'charge' => Charge::find($charge['id']),
-            'credential' => $this->credential,
-        ];
+        $this->baseUrl = self::BASE_URL_TESTING;
+        $this->key = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ123456';
     }
 
     public function query(Charge $charge)
@@ -163,18 +156,12 @@ class WechatBase extends IPayment
         $this->verifyResponse($res, $this->key);
     }
 
-    public function setTesting()
-    {
-        $this->baseUrl = self::BASE_URL_TESTING;
-        $this->key = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ123456';
-    }
-
     protected function generateNonceString($seed)
     {
         return md5($this->appId . $this->mchId . time() . $seed);
     }
 
-    protected function request($action, $reqData, $cert_array = NULL)
+    protected function request($action, $reqData)
     {
         $res = NULL;
         for ($i = 0; $i < 2; $i++)
@@ -247,67 +234,11 @@ class WechatBase extends IPayment
         return strtoupper(md5($signString));
     }
 
-    protected function getBaseUrl()
-    {
-        return $this->baseUrl;
-    }
-
     protected function getUrl($action)
     {
         $url = $this->getBaseUrl() . self::ACTIONS[$action];
 
         return $url;
-    }
-
-    public function create_query_string($get_array, $url_encoding = FALSE, $quote = FALSE, $with_null = FALSE)
-    {
-        $qs = "";
-        foreach ($get_array as $k => $v)
-        {
-            if (is_array($v))
-            {
-                continue;
-            }
-            $v = strval($v);
-            if ($with_null === FALSE && $v === '')
-            {
-                continue;
-            }
-            $url_encoding === TRUE && $v = rawurlencode($v);
-            $quote === TRUE && $v = '"'.$v.'"';
-            $qs .= $k.'='.$v.'&';
-        }
-
-        //remove last char &
-        $qs = substr($qs, 0, count($qs) - 2);
-
-        //remove escape code
-        get_magic_quotes_gpc() === TRUE && $qs = stripslashes($qs);
-
-        return $qs;
-    }
-
-    public function normalize_req($req, $filter_array = [], $sort = TRUE, $with_null = FALSE)
-    {
-        $normalized_req = [];
-        //filter
-        foreach ($req as $k => $v)
-        {
-            if (in_array($k, $filter_array) || is_array($v))
-            {
-                continue;
-            }
-            $v = strval($v);
-            if ($with_null === FALSE && $v === "")
-            {
-                continue;
-            }
-            $normalized_req[$k] = $v;
-        }
-        //sort
-        $sort && ksort($normalized_req);
-
-        return $normalized_req;
     }
 
     protected function getNotifyUrl()

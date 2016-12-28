@@ -17,21 +17,16 @@ class AlipayQR extends AlipayBase
             'total_amount'      => $this->formatAmount($charge['amount']),
         ];
 
-        $commonParams = $this->makeCommonParameters(self::METHODS['qrcode.pay'], $charge['created_at']);
+        $commonParams = $this->makeCommonParameters($this->getAction('qrcode.pay'), $charge['created_at']);
         $commonParams['notify_url'] = $this->makeNotifyUrl($charge['id']);
         $commonParams['biz_content'] = json_encode($bizContent);
 
-        $requestUrl = $this->makeRequestUrl($commonParams);
-
-        $this->httpClient->initHttpClient('');
-        $res = $this->httpClient->requestPlainText('GET', $requestUrl);
-        $res = \GuzzleHttp\json_decode($res, true);
+        $res = $this->request($commonParams);
 
         $res = $res[self::RESPONSE_KEY['qrcode.pay']];
         if($res['code'] === '10000' && $res['out_trade_no'] === $charge['trade_no']) {
-            return [
-                'credential' => $res['qr_code'],
-            ];
+            $this->credential = $res['qr_code'];
+            return parent::charge($charge);
         }
 
         throw new BadRequestException('请求失败:' . $res['code']);

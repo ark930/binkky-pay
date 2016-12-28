@@ -7,18 +7,82 @@ use App\Models\Refund;
 
 abstract class IPayment
 {
-    abstract public function charge(Charge $charge);
+    /**
+     * @var \App\Libraries\HttpClient
+     */
+    protected $httpClient;
 
+    /**
+     * @var string 第三方渠道请求地址
+     */
+    protected $baseUrl;
+
+    /**
+     * @var string 第三方渠道返回的支付凭据
+     */
+    protected $credential;
+
+    /**
+     * 以测试模式向第三方支付渠道发起请求
+     */
+    abstract public function setTesting();
+
+    /**
+     * 查询
+     * @param Charge $charge
+     * @return mixed
+     */
     abstract public function query(Charge $charge);
 
+    /**
+     * 异步通知
+     * @param Charge $charge
+     * @param array $notify
+     * @return mixed
+     */
     abstract public function notify(Charge $charge, array $notify);
 
+    /**
+     * 退款
+     * @param Charge $charge
+     * @param Refund $refund
+     * @return mixed
+     */
     abstract public function refund(Charge $charge, Refund $refund);
 
+    /**
+     * 退款查询
+     * @param Charge $charge
+     * @param Refund $refund
+     * @return mixed
+     */
     abstract public function refundQuery(Charge $charge, Refund $refund);
+
+    /**
+     * 支付请求
+     * @param Charge $charge
+     * @return array
+     */
+    public function charge(Charge $charge)
+    {
+        return $this->formatChargeCredential($charge['id'], $this->credential);
+    }
+
+    protected function getBaseUrl()
+    {
+        return $this->baseUrl;
+    }
 
     protected function makeNotifyUrl($charge_id)
     {
         return route('notify', ['charge_id' => $charge_id]);
+    }
+
+    protected function formatChargeCredential($chargeId, $credential)
+    {
+        return [
+            'charge' => Charge::find($chargeId),
+            'credential' => $credential,
+        ];
     }
 }

@@ -17,15 +17,14 @@ class AlipayWap extends AlipayBase
             'product_code'      => 'QUICK_WAP_PAY',
         ];
 
-        $commonParams = $this->makeCommonParameters(self::METHODS['wap.pay'], $charge['created_at']);
+        $commonParams = $this->makeCommonParameters($this->getAction('wap.pay'), $charge['created_at']);
         $commonParams['return_url'] = $charge['return_url'];
         $commonParams['notify_url'] = $this->makeNotifyUrl($charge['id']);
         $commonParams['biz_content'] = json_encode($bizContent);
 
         $requestUrl = $this->makeRequestUrl($commonParams);
 
-        return [
-            'credential' => $requestUrl,
-        ];
+        $this->credential = $requestUrl;
+        return parent::charge($charge);
     }
 }

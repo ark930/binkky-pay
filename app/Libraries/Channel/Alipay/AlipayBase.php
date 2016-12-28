@@ -11,12 +11,13 @@ use App\Models\Refund;
 class AlipayBase extends IPayment
 {
     const GATEWAY_URL = "https://openapi.alipay.com/gateway.do";
+    const GATEWAY_URL_TESTING = "https://openapi.alipaydev.com/gateway.do";
 
     const FORMAT_JSON = 'JSON';
     const VERSION_1_0 = '1.0';
     const SIGN_TYPE_RSA = 'RSA';
     const CHARSET_UTF8 = 'UTF-8';
-    const METHODS = [
+    const ACTIONS = [
         'scan.pay'      => 'alipay.trade.pay',
         'qrcode.pay'    => 'alipay.trade.precreate',
         'wap.pay'       => 'alipay.trade.wap.pay',
@@ -47,10 +48,12 @@ class AlipayBase extends IPayment
         'business.failed'   => '40004',
     ];
 
+    protected $baseUrl;
+    protected $httpClient = null;
+
     protected $appId = null;
     protected $privateKey = null;
     protected $alipayPublicKey = null;
-    protected $httpClient = null;
 
     public function __construct($channelParams)
     {
@@ -59,10 +62,37 @@ class AlipayBase extends IPayment
         $this->alipayPublicKey = $channelParams['alipay_public_key'];
 
         $this->httpClient = new HttpClient();
+        $this->baseUrl = self::GATEWAY_URL;
     }
 
-    public function charge(Charge $charge)
+    public function setTesting()
     {
+        $this->baseUrl = self::GATEWAY_URL_TESTING;
+
+        // 支付宝沙箱测试应用参数
+        $this->appId = '2016072900113901';
+        $this->alipayPublicKey =
+'-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDIgHnOn7LLILlKETd6BFRJ0Gqg
+S2Y3mn1wMQmyh9zEyWlz5p1zrahRahbXAfCfSqshSNfqOmAQzSHRVjCqjsAw1jyq
+rXaPdKBmr90DIpIxmIyKXv4GGAkPyJ/6FTFY99uhpiq0qadD/uSzQsefWo0aTvP/
+65zi3eof7TcZ32oWpwIDAQAB
+-----END PUBLIC KEY-----';
+        $this->privateKey = '-----BEGIN RSA PRIVATE KEY-----
+MIICXQIBAAKBgQDt1x9PyhXDcIKMZWqOKjHu/HrD/2naqv0LxaiD6FlZWknT215E
+YxxRgGwPLIxkMK6T/XLhMCK5pffnz/ORCgI3bwFNZpIjqQTEieZ6+H3jCY3TjNvL
+ZO05b4LlXRdi68Lmtu4Ylu5zowd/lM3ZeZ3NnSJr6fcAm8lh43f0npEnyQIDAQAB
+AoGBAKwkiassbvgX1MVdGfRvodiBsTFvCeSU4bXFiCSA5TqA2PKX0fDZc0OiGZQa
+ADr76T9/r8hBGMEZ2QZVQsr1XYfwdymFwduTCiK6KNtUNSTt4xx8Vjef2npNDq5v
+bLyNtW6BpqjpsqLb0ltnJGhIPubHQv7YRhXkjQcWlw1Uj6IBAkEA+wva+Po4DQmO
+3khP/Nb8wyxSQOiu/4W6pjkxvLgRwzdcR6NOSOk55fENP4TIrYO3NsPpaUTx2E3X
+wwhCWIVdqQJBAPKIjsdhfXaJ5WTrdI9BsHjq/EvyI8HX07cuX8dMvaKXoPo5u5c3
+cl86TuvBCFpWj3mE0+ScLWz/G+EhCpS6jSECQQCsW6hcVlaTROOs4xLfsa7aRRy3
+6cj0MBlEtHHccrfnQqP9nzZJQq74mvYQjRbGYm8wj3M6ThaI/nDLO2lpoy75AkBL
+Vdmr2v+Cw6CqsWyaVxg+5xcJbCRpQOY1n0UG/jJlf93z+9zmQsXXCKCdIG+8x+h3
+IahD+bMuiSuayY2k1zGhAkAec+NXdmO8GKxQeAag3wUcko6y8TwMzhVHuj/FrUl1
+9bDupWK8x5kIqDgR4MPNfoZXfWC9pUiGFDjRqNNtE0In
+-----END RSA PRIVATE KEY-----';
     }
 
     public function query(Charge $charge)
@@ -73,9 +103,9 @@ class AlipayBase extends IPayment
             $bizContent['out_trade_no'] = $charge['trade_no'];
         }
 
-        $requestUrl = $this->makeRequest(self::METHODS['query'], $bizContent);
+        $requestUrl = $this->makeRequest($this->getAction('query'), $bizContent);
 
-        $this->httpClient->initHttpClient(self::GATEWAY_URL);
+        $this->httpClient->initHttpClient($this->getBaseUrl());
         $response = $this->httpClient->requestJson('GET', $requestUrl);
 
         $data = $this->parseResponse($response, self::RESPONSE_KEY['query']);
@@ -146,9 +176,9 @@ class AlipayBase extends IPayment
             $bizContent['out_trade_no'] = $charge['trade_no'];
         }
 
-        $requestUrl = $this->makeRequest(self::METHODS['refund'], $bizContent, $refund['created_at']);
+        $requestUrl = $this->makeRequest($this->getAction('refund'), $bizContent, $refund['created_at']);
 
-        $this->httpClient->initHttpClient(self::GATEWAY_URL);
+        $this->httpClient->initHttpClient($this->getBaseUrl());
         $response = $this->httpClient->requestJson('GET', $requestUrl);
 
         $data = $this->parseResponse($response, self::RESPONSE_KEY['refund']);
@@ -166,9 +196,9 @@ class AlipayBase extends IPayment
             $bizContent['out_trade_no'] = $charge['trade_no'];
         }
 
-        $requestUrl = $this->makeRequest(self::METHODS['refund.query'], $bizContent);
+        $requestUrl = $this->makeRequest($this->getAction('refund.query'), $bizContent);
 
-        $this->httpClient->initHttpClient(self::GATEWAY_URL);
+        $this->httpClient->initHttpClient($this->getBaseUrl());
         $response = $this->httpClient->requestJson('GET', $requestUrl);
 
         $data = $this->parseResponse($response, self::RESPONSE_KEY['refund.query']);
@@ -186,7 +216,7 @@ class AlipayBase extends IPayment
             $bizContent['out_trade_no'] = $charge['trade_no'];
         }
 
-        $requestUrl = $this->makeRequest(self::METHODS['close'], $bizContent);
+        $requestUrl = $this->makeRequest($this->getAction('close'), $bizContent);
 
         return $requestUrl;
     }
@@ -199,7 +229,7 @@ class AlipayBase extends IPayment
             $bizContent['out_trade_no'] = $charge['trade_no'];
         }
 
-        $requestUrl = $this->makeRequest(self::METHODS['cancel'], $bizContent);
+        $requestUrl = $this->makeRequest($this->getAction('cancel'), $bizContent);
 
         return $requestUrl;
     }
@@ -217,7 +247,7 @@ class AlipayBase extends IPayment
             $bizContent['out_trade_no'] = $charge['trade_no'];
         }
 
-        $requestUrl = $this->makeRequest(self::METHODS['cancel'], $bizContent);
+        $requestUrl = $this->makeRequest($this->getAction('cancel'), $bizContent);
 
         return $requestUrl;
     }
@@ -229,9 +259,9 @@ class AlipayBase extends IPayment
             'bill_date'         => $params['bill_date'],
         ];
 
-        $requestUrl = $this->makeRequest(self::METHODS['bill.check'], $bizContent);
+        $requestUrl = $this->makeRequest($this->getAction('bill.check'), $bizContent);
 
-        $this->initHttpClient(self::GATEWAY_URL);
+        $this->initHttpClient($this->getBaseUrl());
         $body = $this->requestForm('GET', $requestUrl);
         $body = \GuzzleHttp\json_decode($body);
 
@@ -243,12 +273,23 @@ class AlipayBase extends IPayment
         return $body['alipay_data_dataservice_bill_downloadurl_query_response']['bill_download_url'];
     }
 
-    protected function makeRequest($method, $bizContent, $timestamp = null)
+    protected function request($params)
+    {
+        $requestUrl = $this->makeRequestUrl($params);
+
+        $this->httpClient->initHttpClient();
+        $res = $this->httpClient->requestForm('GET', $requestUrl);
+        $res = \GuzzleHttp\json_decode($res, true);
+
+        return $res;
+    }
+
+    protected function makeRequest($action, $bizContent, $timestamp = null)
     {
         if(is_null($timestamp)) {
             $timestamp = date('Y-m-d H:i:s');
         }
-        $commonParams = $this->makeCommonParameters($method, $timestamp);
+        $commonParams = $this->makeCommonParameters($action, $timestamp);
         $commonParams['biz_content'] = json_encode($bizContent);
 
         $requestUrl = $this->makeRequestUrl($commonParams);
@@ -275,7 +316,7 @@ class AlipayBase extends IPayment
     {
         $preSignStr = $this->getSignContent($params);
         $sign =  $this->sign($preSignStr, $this->privateKey);
-        $requestUrl = self::GATEWAY_URL."?".$preSignStr."&sign=".urlencode($sign);
+        $requestUrl = $this->getBaseUrl()."?".$preSignStr."&sign=".urlencode($sign);
 
         return $requestUrl;
     }
@@ -334,5 +375,10 @@ class AlipayBase extends IPayment
     protected function makeExpiredTime($second)
     {
         return '90m';
+    }
+
+    protected function getAction($name)
+    {
+        return self::ACTIONS[$name];
     }
 }
