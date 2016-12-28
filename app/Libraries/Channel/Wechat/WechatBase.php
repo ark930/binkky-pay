@@ -30,6 +30,7 @@ class WechatBase extends IPayment
         'pub' => 'JSAPI',
     ];
 
+    // 微信参数变量
     protected $appId;
     protected $mchId;
     protected $key;
@@ -40,12 +41,14 @@ class WechatBase extends IPayment
         $this->mchId = $channelParams['mch_id'];
         $this->key = $channelParams['key'];
 
-        $this->httpClient = new HttpClient();
         $this->baseUrl = self::BASE_URL;
+
+        parent::__construct();
     }
 
     public function setTesting()
     {
+        // 微信测试参数
         $this->baseUrl = self::BASE_URL_TESTING;
         $this->key = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ123456';
     }

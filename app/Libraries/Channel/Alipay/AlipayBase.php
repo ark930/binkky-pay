@@ -48,9 +48,7 @@ class AlipayBase extends IPayment
         'business.failed'   => '40004',
     ];
 
-    protected $baseUrl;
-    protected $httpClient = null;
-
+    // 支付宝参数变量
     protected $appId = null;
     protected $privateKey = null;
     protected $alipayPublicKey = null;
@@ -61,8 +59,9 @@ class AlipayBase extends IPayment
         $this->privateKey = $channelParams['private_key'];
         $this->alipayPublicKey = $channelParams['alipay_public_key'];
 
-        $this->httpClient = new HttpClient();
         $this->baseUrl = self::GATEWAY_URL;
+
+        parent::__construct();
     }
 
     public function setTesting()
@@ -71,8 +70,7 @@ class AlipayBase extends IPayment
 
         // 支付宝沙箱测试应用参数
         $this->appId = '2016072900113901';
-        $this->alipayPublicKey =
-'-----BEGIN PUBLIC KEY-----
+        $this->alipayPublicKey = '-----BEGIN PUBLIC KEY-----
 MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDIgHnOn7LLILlKETd6BFRJ0Gqg
 S2Y3mn1wMQmyh9zEyWlz5p1zrahRahbXAfCfSqshSNfqOmAQzSHRVjCqjsAw1jyq
 rXaPdKBmr90DIpIxmIyKXv4GGAkPyJ/6FTFY99uhpiq0qadD/uSzQsefWo0aTvP/

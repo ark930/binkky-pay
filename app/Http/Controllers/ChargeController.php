@@ -13,7 +13,7 @@ class ChargeController extends Controller
         // 参数验证
         $this->validate($request, [
             // 必要参数
-            'channel'       => 'required|in:alipay,wechat',
+            'channel'       => 'required|in:alipay,wechat,union_pay',
             'type'          => 'required|in:qr,scan,wap,pub',
             'trade_no'      => 'required|min:8',
             'amount'        => 'required|integer',

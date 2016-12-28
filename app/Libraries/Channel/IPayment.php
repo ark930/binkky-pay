@@ -2,6 +2,7 @@
 
 namespace App\Libraries\Channel;
 
+use App\Libraries\HttpClient;
 use App\Models\Charge;
 use App\Models\Refund;
 
@@ -21,6 +22,11 @@ abstract class IPayment
      * @var string 第三方渠道返回的支付凭据
      */
     protected $credential;
+
+    public function __construct()
+    {
+        $this->httpClient = new HttpClient();
+    }
 
     /**
      * 以测试模式向第三方支付渠道发起请求
@@ -86,8 +92,8 @@ abstract class IPayment
         ];
     }
 
-    protected function getNotifyUrl()
-    {
-        return env('NOTIFY_BASE_URL') . '/charges/%s/notify';
-    }
+//    protected function getNotifyUrl()
+//    {
+//        return env('NOTIFY_BASE_URL') . '/charges/%s/notify';
+//    }
 }
