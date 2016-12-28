@@ -108,7 +108,7 @@ IahD+bMuiSuayY2k1zGhAkAec+NXdmO8GKxQeAag3wUcko6y8TwMzhVHuj/FrUl1
         $this->httpClient->initHttpClient($this->getBaseUrl());
         $response = $this->httpClient->requestJson('GET', $requestUrl);
 
-        $data = $this->parseResponse($response, self::RESPONSE_KEY['query']);
+        $data = $this->parseResponse($response, $this->getResponseKey('query'));
 
         if($data['code'] === self::RESPONSE_CODE['success']) {
             if($data['trade_status'] === 'TRADE_FINISHED' || $data['trade_status'] === 'TRADE_SUCCESS') {
@@ -181,7 +181,7 @@ IahD+bMuiSuayY2k1zGhAkAec+NXdmO8GKxQeAag3wUcko6y8TwMzhVHuj/FrUl1
         $this->httpClient->initHttpClient($this->getBaseUrl());
         $response = $this->httpClient->requestJson('GET', $requestUrl);
 
-        $data = $this->parseResponse($response, self::RESPONSE_KEY['refund']);
+        $data = $this->parseResponse($response, $this->getResponseKey('refund'));
 
         return $data;
     }
@@ -201,7 +201,7 @@ IahD+bMuiSuayY2k1zGhAkAec+NXdmO8GKxQeAag3wUcko6y8TwMzhVHuj/FrUl1
         $this->httpClient->initHttpClient($this->getBaseUrl());
         $response = $this->httpClient->requestJson('GET', $requestUrl);
 
-        $data = $this->parseResponse($response, self::RESPONSE_KEY['refund.query']);
+        $data = $this->parseResponse($response, $this->getResponseKey('refund.query'));
 
         return $data;
     }
@@ -380,5 +380,10 @@ IahD+bMuiSuayY2k1zGhAkAec+NXdmO8GKxQeAag3wUcko6y8TwMzhVHuj/FrUl1
     protected function getAction($name)
     {
         return self::ACTIONS[$name];
+    }
+
+    protected function getResponseKey($name)
+    {
+        return self::RESPONSE_KEY[$name];
     }
 }

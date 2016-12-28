@@ -85,4 +85,9 @@ abstract class IPayment
             'credential' => $credential,
         ];
     }
+
+    protected function getNotifyUrl()
+    {
+        return env('NOTIFY_BASE_URL') . '/charges/%s/notify';
+    }
 }

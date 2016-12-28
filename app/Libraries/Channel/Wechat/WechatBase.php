@@ -241,11 +241,6 @@ class WechatBase extends IPayment
         return $url;
     }
 
-    protected function getNotifyUrl()
-    {
-        return env('NOTIFY_BASE_URL') . '/charges/%s/notify';
-    }
-
     protected function formatTime($time)
     {
         if(empty($time)) {
