@@ -15,7 +15,7 @@ class CreateChannelAlipaysTable extends Migration
     {
         Schema::create('channel_alipays', function(Blueprint $table) {
             $table->increments('id');
-            $table->unsignedInteger('app_id');
+            $table->unsignedInteger('partner_id')->unique()->comment('合作方ID');
             $table->char('appid', 16)->comment('支付宝APPID');
             $table->text('public_key')->comment('应用公钥, 由商户生成');
             $table->text('private_key')->comment('应用私钥, 由商户生成');

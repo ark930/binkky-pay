@@ -15,6 +15,7 @@ class CreateChannelUnionPaysTable extends Migration
     {
         Schema::create('channel_union_pays', function(Blueprint $table) {
             $table->increments('id');
+            $table->unsignedInteger('partner_id')->unique()->comment('合作方ID');
             $table->char('mer_id', 15)->comment('银联商户号');
             $table->text('cert')->comment('银联用户证书');
             $table->string('cert_password', 64)->nullable()->comment('银联用户证书密码');
