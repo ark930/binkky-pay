@@ -38,7 +38,12 @@ abstract class IPayment
      * @param Charge $charge
      * @return mixed
      */
-    abstract public function query(Charge $charge);
+    public function query(Charge $charge)
+    {
+        return [
+            'charge' => Charge::find($charge['id']),
+        ];
+    }
 
     /**
      * 异步通知

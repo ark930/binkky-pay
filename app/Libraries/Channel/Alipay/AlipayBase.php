@@ -4,7 +4,6 @@ namespace App\Libraries\Channel\Alipay;
 
 use App\Libraries\Channel\Helper;
 use App\Libraries\Channel\IPayment;
-use App\Libraries\HttpClient;
 use App\Models\Charge;
 use App\Models\Refund;
 
@@ -106,21 +105,18 @@ IahD+bMuiSuayY2k1zGhAkAec+NXdmO8GKxQeAag3wUcko6y8TwMzhVHuj/FrUl1
         $this->httpClient->initHttpClient($this->getBaseUrl());
         $response = $this->httpClient->requestJson('GET', $requestUrl);
 
-        $data = $this->parseResponse($response, $this->getResponseKey('query'));
+        $res = $this->parseResponse($response, $this->getResponseKey('query'));
 
-        if($data['code'] === self::RESPONSE_CODE['success']) {
-            if($data['trade_status'] === 'TRADE_FINISHED' || $data['trade_status'] === 'TRADE_SUCCESS') {
+        if($res['code'] === self::RESPONSE_CODE['success']) {
+            if($res['trade_status'] === 'TRADE_FINISHED' || $res['trade_status'] === 'TRADE_SUCCESS') {
                 $charge['status'] = Charge::STATUS_SUCCEEDED;
-                $charge['paid_at'] = $data['send_pay_date'];
-                $charge['tn'] = $data['trade_no'];
+                $charge['paid_at'] = $res['send_pay_date'];
+                $charge['tn'] = $res['trade_no'];
                 $charge->save();
             }
-        } else {
-            $charge['status'] = Charge::STATUS_FAILED;
-            $charge->save();
         }
 
-        return $data;
+        return parent::query($charge);
     }
 
     public function notify(Charge $charge, array $notify)

@@ -5,7 +5,6 @@ namespace App\Libraries\Channel\Wechat;
 use App\Exceptions\APIException;
 use App\Libraries\Channel\Helper;
 use App\Libraries\Channel\IPayment;
-use App\Libraries\HttpClient;
 use App\Models\Charge;
 use App\Models\Refund;
 
@@ -58,7 +57,6 @@ class WechatBase extends IPayment
         $req = [
             'appid'             => $this->appId,
             'mch_id'            => $this->mchId,
-            'sub_mch_id'        => $this->mchId,
             'nonce_str'         => $this->generateNonceString($charge['trade_no']),
         ];
 
@@ -67,6 +65,7 @@ class WechatBase extends IPayment
         } else {
             $req['out_trade_no'] = $charge['trade_no'];
         }
+        $req['out_trade_no'] = $charge['trade_no'];
 
         $req['sign'] = $this->signArray($req, $this->key);
         $reqXml = Helper::arrayToXml($req);
@@ -81,14 +80,17 @@ class WechatBase extends IPayment
         $this->verifyResponse($res, $this->key);
         if ($res['result_code'] != 'SUCCESS')
         {
-            if ($res['err_code'] == 'OUT_TRADE_NO_USED')
-            {
-                throw new APIException('订单号已使用');
-            }
-            throw new APIException('渠道请求失败');
+            throw new APIException('渠道请求失败: ' . $res['err_code'] . '=>' . $res['err_code_des']);
         }
 
-        return $charge;
+        if($res['trade_state'] === 'SUCCESS') {
+            $charge['status'] = Charge::STATUS_SUCCEEDED;
+            $charge['paid_at'] = date('Y-m-d H:i:s', strtotime($res['time_end']));
+            $charge['tn'] = $res['transaction_id'];
+            $charge->save();
+        }
+
+        return parent::query($charge);
     }
 
     public function notify(Charge $charge, array $notify)
@@ -229,6 +231,7 @@ class WechatBase extends IPayment
         $signArray = Helper::removeKeys($req, ['sign']);
         $signArray = Helper::removeEmpty($signArray);
         ksort($signArray);
+
         $signString = Helper::joinToString($signArray).'&key='.$key;
 
 //        $signed_array = $this->normalize_req($req);

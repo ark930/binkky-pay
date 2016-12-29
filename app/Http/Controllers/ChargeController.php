@@ -55,18 +55,18 @@ class ChargeController extends Controller
         }
         $charge->save();
 
-        if($request->hasHeader('X-Testing') && $request->header('X-Testing') == 'true') {
+        if($this->isTesting($request)) {
             $payment = Payment::makeTesting($charge['channel'], $charge['type']);
         } else {
             $payment = Payment::make($charge['channel'], $charge['type']);
         }
 
-        $data = $payment->charge($charge);
+        $charge = $payment->charge($charge);
 
-        return response($data, 200);
+        return response($charge, 200);
     }
 
-    public function query($charge_id)
+    public function query(Request $request, $charge_id)
     {
         $charge = Charge::findOrFail($charge_id);
         $channel = $charge['channel'];
@@ -75,10 +75,14 @@ class ChargeController extends Controller
             return $charge;
         }
 
-        $payment = Payment::make($channel);
-        $data = $payment->query($charge);
+        if($this->isTesting($request)) {
+            $payment = Payment::makeTesting($channel);
+        } else {
+            $payment = Payment::make($channel);
+        }
+        $charge = $payment->query($charge);
 
-        return response($data, 200);
+        return response($charge, 200);
     }
 
     public function notify(Request $request, $charge_id)
@@ -95,5 +99,14 @@ class ChargeController extends Controller
         $data = $payment->notify($charge, $notify);
 
         return response($data, 200);
+    }
+
+    private function isTesting(Request $request)
+    {
+        if($request->hasHeader('X-Testing') && $request->header('X-Testing') == 'true') {
+            return true;
+        }
+
+        return false;
     }
 }
