@@ -109,6 +109,7 @@ hk75g2vUSxYOs9AT25a0sb7IHHi+COOHQfpB8xWjt0PJCccGiYQiKqqNU5pGkzUQ
     {
 
     }
+
     protected function signArray($req, $privateKey)
     {
         $signArray = Helper::removeKeys($req, ['signature']);

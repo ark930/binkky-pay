@@ -27,7 +27,7 @@ class Helper
     public static function removeEmpty(array $data)
     {
         foreach ($data as $k => $v) {
-            if(empty($v)) {
+            if(is_null($data[$k])) {
                 unset($data[$k]);
             }
         }

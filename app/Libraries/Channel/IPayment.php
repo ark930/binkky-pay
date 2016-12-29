@@ -87,8 +87,8 @@ abstract class IPayment
     protected function formatChargeCredential($chargeId, $credential)
     {
         return [
-            'charge' => Charge::find($chargeId),
             'credential' => $credential,
+            'charge' => Charge::find($chargeId),
         ];
     }
 
