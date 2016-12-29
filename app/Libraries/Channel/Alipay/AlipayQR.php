@@ -20,10 +20,9 @@ class AlipayQR extends AlipayBase
         $commonParams = $this->makeCommonParameters($this->getAction('qrcode.pay'), $charge['created_at']);
         $commonParams['notify_url'] = $this->makeNotifyUrl($charge['id']);
         $commonParams['biz_content'] = json_encode($bizContent);
+        $response = $this->request($commonParams);
+        $res = $this->parseResponse($response, $this->getResponseKey('qrcode.pay'));
 
-        $res = $this->request($commonParams);
-
-        $res = $res[$this->getResponseKey('qrcode.pay')];
         if($res['code'] === '10000' && $res['out_trade_no'] === $charge['trade_no']) {
             $this->credential = $res['qr_code'];
             return parent::charge($charge);

@@ -25,10 +25,9 @@ class AlipayScan extends AlipayBase
         $commonParams = $this->makeCommonParameters($this->getAction('scan.pay'), $charge['created_at']);
         $commonParams['notify_url'] = $this->makeNotifyUrl($charge['id']);
         $commonParams['biz_content'] = json_encode($bizContent);
+        $response = $this->request($commonParams);
+        $res = $this->parseResponse($response, $this->getResponseKey('scan.pay'));
 
-        $res = $this->request($commonParams);
-
-        $res = $res[$this->getResponseKey('scan.pay')];
         if($res['code'] === '10000' && $res['out_trade_no'] === $charge['trade_no']) {
             $this->credential = $res['qr_code'];
             return parent::charge($charge);

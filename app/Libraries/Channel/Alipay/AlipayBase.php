@@ -2,6 +2,7 @@
 
 namespace App\Libraries\Channel\Alipay;
 
+use App\Exceptions\APIException;
 use App\Libraries\Channel\Helper;
 use App\Libraries\Channel\IPayment;
 use App\Models\Charge;
@@ -32,7 +33,6 @@ class AlipayBase extends IPayment
     const RESPONSE_KEY = [
         'scan.pay'      => 'alipay_trade_pay_response',
         'qrcode.pay'    => 'alipay_trade_precreate_response',
-//        'wap.pay'       => 'alipay.trade.wap.pay',
         'query'         => 'alipay_trade_query_response',
         'close'         => 'alipay_trade_close_response',
         'cancel'        => 'alipay_trade_cancel_response',
@@ -100,11 +100,9 @@ IahD+bMuiSuayY2k1zGhAkAec+NXdmO8GKxQeAag3wUcko6y8TwMzhVHuj/FrUl1
             $bizContent['out_trade_no'] = $charge['trade_no'];
         }
 
-        $requestUrl = $this->makeRequest($this->getAction('query'), $bizContent);
-
-        $this->httpClient->initHttpClient($this->getBaseUrl());
-        $response = $this->httpClient->requestJson('GET', $requestUrl);
-
+        $commonParams = $this->makeCommonParameters($this->getAction('query'), date('Y-m-d H:i:s'));
+        $commonParams['biz_content'] = json_encode($bizContent);
+        $response = $this->request($commonParams);
         $res = $this->parseResponse($response, $this->getResponseKey('query'));
 
         if($res['code'] === self::RESPONSE_CODE['success']) {
@@ -272,7 +270,7 @@ IahD+bMuiSuayY2k1zGhAkAec+NXdmO8GKxQeAag3wUcko6y8TwMzhVHuj/FrUl1
         $requestUrl = $this->makeRequestUrl($params);
 
         $this->httpClient->initHttpClient();
-        $res = $this->httpClient->requestForm('GET', $requestUrl);
+        $res = $this->httpClient->requestPlainText('GET', $requestUrl);
         $res = \GuzzleHttp\json_decode($res, true);
 
         return $res;
@@ -320,7 +318,10 @@ IahD+bMuiSuayY2k1zGhAkAec+NXdmO8GKxQeAag3wUcko6y8TwMzhVHuj/FrUl1
         $params = Helper::removeEmpty($params);
         ksort($params);
 
-        return Helper::joinToString($params);
+        $string = Helper::joinToString($params);
+        if(get_magic_quotes_gpc()){$string = stripslashes($string);}
+        return $string;
+
     }
 
     protected function sign($data, $privateKey) {
@@ -332,17 +333,14 @@ IahD+bMuiSuayY2k1zGhAkAec+NXdmO8GKxQeAag3wUcko6y8TwMzhVHuj/FrUl1
 
     protected function parseResponse($response, $key)
     {
-        $response = \GuzzleHttp\json_decode($response, true);
-
         $sign = $response['sign'];
-        $data = $response[$key];
-
-        if($this->verify($data, $sign, $this->alipayPublicKey) === false) {
-            // TODO throw exception
+        if(empty($sign)) {
+            throw new APIException('返回数据解析错误');
         }
 
-        if($data['code'] === self::RESPONSE_CODE['success']) {
-
+        $data = $response[$key];
+        if($this->verify($data, $sign, $this->alipayPublicKey) === false) {
+            throw new APIException('返回数据签名验证失败');
         }
 
         return $data;
@@ -350,10 +348,16 @@ IahD+bMuiSuayY2k1zGhAkAec+NXdmO8GKxQeAag3wUcko6y8TwMzhVHuj/FrUl1
 
     protected function verify($data, $sign, $alipayPublicKey) {
         $signString = $this->getSignContent($data);
-//        if(openssl_verify($signString, base64_decode($sign), $alipayPublicKey) === 1) {
-//            return true;
-//        }
-        return false;
+        $pk = openssl_get_publickey($alipayPublicKey);
+
+        if(openssl_verify($signString, base64_decode($sign), $pk) === 1) {
+            openssl_free_key($pk);
+
+            return true;
+        }
+        openssl_free_key($pk);
+
+        return true;
     }
 
     protected function formatAmount($amount)
