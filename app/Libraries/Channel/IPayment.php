@@ -84,11 +84,6 @@ abstract class IPayment
         return $this->baseUrl;
     }
 
-    protected function makeNotifyUrl($charge_id)
-    {
-        return route('notify', ['charge_id' => $charge_id]);
-    }
-
     protected function formatChargeCredential($chargeId, $credential)
     {
         return [

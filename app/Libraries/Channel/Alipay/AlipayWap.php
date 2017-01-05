@@ -22,7 +22,7 @@ class AlipayWap extends AlipayBase
 
         $commonParams = $this->makeCommonParameters($this->getAction('wap.pay'), $charge['created_at']);
         $commonParams['return_url'] = $charge['return_url'];
-        $commonParams['notify_url'] = $this->makeNotifyUrl($charge['id']);
+        $commonParams['notify_url'] = $charge['notify_url'];
         $commonParams['biz_content'] = json_encode($bizContent);
 
         $requestUrl = $this->makeRequestUrl($commonParams);

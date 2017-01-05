@@ -19,7 +19,7 @@ class WechatPub extends WechatBase
             'total_fee'        => $charge['amount'],
             'spbill_create_ip' => $charge['client_ip'],
             'time_start'       => date('YmdHis', strtotime($charge['created_at'])),
-            'notify_url'       => $this->makeNotifyUrl($charge['id']),
+            'notify_url'       => $charge['notify_url'],
             'trade_type'       => self::TRADE_TYPES['pub'],
             'openid'           => $charge['auth_code'],
         ];

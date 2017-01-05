@@ -26,7 +26,7 @@ class AlipayScan extends AlipayBase
         }
 
         $commonParams = $this->makeCommonParameters($this->getAction('scan.pay'), $charge['created_at']);
-        $commonParams['notify_url'] = $this->makeNotifyUrl($charge['id']);
+        $commonParams['notify_url'] = $charge['notify_url'];
         $commonParams['biz_content'] = json_encode($bizContent);
         $response = $this->request($commonParams);
         $res = $this->parseResponse($response, $this->getResponseKey('scan.pay'));

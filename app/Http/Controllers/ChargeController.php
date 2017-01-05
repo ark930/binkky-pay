@@ -57,6 +57,8 @@ class ChargeController extends Controller
             $charge['auth_code'] = $request->input('open_id');
         }
         $charge->save();
+        $charge['notify_url'] = $this->makeNotifyUrl($charge['id']);
+        $charge->save();
 
         if($this->isTesting($request)) {
             $payment = Payment::makeTesting($charge['channel'], $charge['type']);
@@ -105,6 +107,11 @@ class ChargeController extends Controller
         $data = $payment->notify($charge, $notify);
 
         return response($data, 200);
+    }
+
+    protected function makeNotifyUrl($charge_id)
+    {
+        return route('notify', ['charge_id' => $charge_id]);
     }
 
     private function isTesting(Request $request)

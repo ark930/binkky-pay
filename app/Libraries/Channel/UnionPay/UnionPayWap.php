@@ -17,7 +17,7 @@ class UnionPayWap extends UnionPayBase
             'txnSubType'    => self::TRANSACTION_SUB_TYPES['sale'],
             'bizType'       => self::BIZ_TYPES['B2C'],
             'channelType'   => self::CHANNEL_TYPES['mobile'],
-            'backUrl'       => $this->makeNotifyUrl($charge['id']),
+            'backUrl'       => $charge['notify_url'],
             'accessType'    => self::ACCESS_TYPE['merchant'],
             'merId'         => $this->merId,
             'orderId'       => $charge['trade_no'],

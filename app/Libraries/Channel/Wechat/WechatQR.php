@@ -20,7 +20,7 @@ class WechatQR extends WechatBase
             'spbill_create_ip' => $charge['client_ip'],
             'time_start'       => $this->formatTime($charge['created_at']),
             'time_expire'      => $this->formatTime($charge['expired_at']),
-            'notify_url'       => $this->makeNotifyUrl($charge['id']),
+            'notify_url'       => $charge['notify_url'],
             'trade_type'       => self::TRADE_TYPES['qr'],
         ];
 

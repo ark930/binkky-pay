@@ -22,6 +22,10 @@ class Charge extends Model
     const STATUS_FAILED = 'failed';
     const STATUS_CLOSED = 'closed';
 
+    protected $hidden = [
+        'id', 'notify_url',
+    ];
+
     public function refunds()
     {
         return $this->hasMany('App\Models\Refund');

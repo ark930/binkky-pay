@@ -366,11 +366,6 @@ IahD+bMuiSuayY2k1zGhAkAec+NXdmO8GKxQeAag3wUcko6y8TwMzhVHuj/FrUl1
         return $amount / 100;
     }
 
-    protected function makeNotifyUrl($charge_id)
-    {
-        return '';
-    }
-
     protected function makeExpiredTime(Charge $charge)
     {
         $minutes = Carbon::parse($charge['expired_at'])->diffInMinutes($charge['created_at']);
