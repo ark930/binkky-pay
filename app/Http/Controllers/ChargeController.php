@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Libraries\Channel\Payment;
 use App\Models\Charge;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ChargeController extends Controller
 {
@@ -39,7 +40,9 @@ class ChargeController extends Controller
         $charge['client_ip'] = $request->input('client_ip');
 
         if($request->has('expired_at')) {
-            $charge['expired_at'] = $request->input('expired_at');
+            if(strtotime($request->input('expired_at')) > time()) {
+                $charge['expired_at'] = $request->input('expired_at');
+            }
         }
         if($charge['type'] == Charge::TYPE_SCAN) {
             $this->validate($request, [
@@ -87,6 +90,9 @@ class ChargeController extends Controller
 
     public function notify(Request $request, $charge_id)
     {
+        Log::info($request->method() . ' ' . $request->fullUrl());
+        Log::info(\GuzzleHttp\json_encode($request->all()));
+
         $charge = Charge::findOrFail($charge_id);
         $channel = $charge['channel'];
         $status = $charge['status'];

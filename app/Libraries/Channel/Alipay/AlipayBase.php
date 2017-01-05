@@ -377,6 +377,18 @@ IahD+bMuiSuayY2k1zGhAkAec+NXdmO8GKxQeAag3wUcko6y8TwMzhVHuj/FrUl1
 
         if($minutes == 0) {
             $minutes = 1;
+        } else if($minutes > 60) {
+            $hours = Carbon::parse($charge['expired_at'])->diffInHours($charge['created_at']);
+            if($hours > 24) {
+                $days = Carbon::parse($charge['expired_at'])->diffInDays($charge['created_at']);
+
+                if($days > 15) {
+                    $days = 15;
+                }
+                return $days . 'd';
+            }
+
+            return $hours . 'h';
         }
 
         return $minutes . 'm';

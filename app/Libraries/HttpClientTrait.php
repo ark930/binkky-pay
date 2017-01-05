@@ -6,6 +6,7 @@ use App\Exceptions\BadRequestException;
 use GuzzleHttp\Client;
 use Exception;
 use GuzzleHttp\Exception\RequestException;
+use Illuminate\Support\Facades\Log;
 
 trait HttpClientTrait
 {
@@ -44,10 +45,12 @@ trait HttpClientTrait
     public function request($method, $url, $options = [])
     {
         try {
+            Log::info($method . ' ' . $url);
             $res = $this->httpClient->request($method, $url, $options);
             $body =  $res->getBody();
-
-            return $body->getContents();
+            $content = $body->getContents();
+            Log::info($content);
+            return $content;
         } catch (Exception $e) {
             $this->exceptionHandler($e);
         }
