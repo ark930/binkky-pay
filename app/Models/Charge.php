@@ -23,7 +23,8 @@ class Charge extends Model
     const STATUS_CLOSED = 'closed';
 
     protected $hidden = [
-        'id', 'notify_url',
+//        'id',
+        'notify_url',
     ];
 
     public function refunds()
