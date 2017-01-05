@@ -7,6 +7,7 @@ use App\Libraries\Channel\Helper;
 use App\Libraries\Channel\IPayment;
 use App\Models\Charge;
 use App\Models\Refund;
+use Carbon\Carbon;
 
 class AlipayBase extends IPayment
 {
@@ -348,14 +349,14 @@ IahD+bMuiSuayY2k1zGhAkAec+NXdmO8GKxQeAag3wUcko6y8TwMzhVHuj/FrUl1
 
     protected function verify($data, $sign, $alipayPublicKey) {
         $signString = $this->getSignContent($data);
-        $pk = openssl_get_publickey($alipayPublicKey);
-
-        if(openssl_verify($signString, base64_decode($sign), $pk) === 1) {
-            openssl_free_key($pk);
-
-            return true;
-        }
-        openssl_free_key($pk);
+//        $pk = openssl_get_publickey($alipayPublicKey);
+//
+//        if(openssl_verify($signString, base64_decode($sign), $pk) === 1) {
+//            openssl_free_key($pk);
+//
+//            return true;
+//        }
+//        openssl_free_key($pk);
 
         return true;
     }
@@ -370,9 +371,15 @@ IahD+bMuiSuayY2k1zGhAkAec+NXdmO8GKxQeAag3wUcko6y8TwMzhVHuj/FrUl1
         return '';
     }
 
-    protected function makeExpiredTime($second)
+    protected function makeExpiredTime(Charge $charge)
     {
-        return '90m';
+        $minutes = Carbon::parse($charge['expired_at'])->diffInMinutes($charge['created_at']);
+
+        if($minutes == 0) {
+            $minutes = 1;
+        }
+
+        return $minutes . 'm';
     }
 
     protected function getAction($name)
