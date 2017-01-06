@@ -91,4 +91,9 @@ abstract class IPayment
             'charge' => Charge::find($chargeId),
         ];
     }
+
+    protected function getNotifyUrl($chargeId)
+    {
+        return route('notify', ['charge_id' => $chargeId]);
+    }
 }
