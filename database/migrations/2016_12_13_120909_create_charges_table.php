@@ -15,10 +15,9 @@ class CreateChargesTable extends Migration
     {
         Schema::create('charges', function(Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedInteger('app_id');
             $table->enum('channel', ['alipay', 'wechat', 'union_pay'])->comment('渠道名称');
             $table->enum('type', ['qr', 'scan', 'pub', 'wap'])->comment('支付类型');
-            $table->string('trade_no', 64)->comment('商户订单号');
+            $table->string('trade_no', 64)->collation('utf8_bin')->comment('商户交易单号');
             $table->string('tn', 64)->nullable()->comment('渠道交易单号, Transaction Number');
             $table->unsignedInteger('amount')->comment('支付金额，以分为单位');
             $table->unsignedInteger('amount_refunded')->default(0)->comment('退款金额，以分为单位');
