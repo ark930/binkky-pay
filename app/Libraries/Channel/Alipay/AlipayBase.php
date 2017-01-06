@@ -3,6 +3,7 @@
 namespace App\Libraries\Channel\Alipay;
 
 use App\Exceptions\APIException;
+use App\Exceptions\BadRequestException;
 use App\Libraries\Channel\Helper;
 use App\Libraries\Channel\IPayment;
 use App\Models\Charge;
@@ -126,17 +127,14 @@ IahD+bMuiSuayY2k1zGhAkAec+NXdmO8GKxQeAag3wUcko6y8TwMzhVHuj/FrUl1
         $signString = $this->getSignContent($notify);
 //        openssl_verify($signString, base64_decode($sign), $this->alipayPublicKey);
 
-        if($charge['amount'] === $notify['total_amount']) {
-
-        } else if($charge['trade_no'] === $notify['out_trade_no']) {
-
-        } else if($charge['app_id'] === $notify['app_id']) {
-
-        } else if(isset($notify['seller_id']) && $charge['seller_id'] === $notify['seller_id']) {
-
-        } else if(isset($notify['seller_email']) && $charge['seller_email'] === $notify['seller_email']) {
-
+        if(empty($notify['total_amount']) || $charge['amount'] != $notify['total_amount']*100) {
+            throw new BadRequestException('通知无效，total_amount 不一致');
+        } else if(empty($notify['out_trade_no']) || $charge['trade_no'] != $notify['out_trade_no']) {
+            throw new BadRequestException('通知无效，out_trade_no 不一致');
+        } else if(empty($notify['app_id']) || $this->appId != $notify['app_id']) {
+            throw new BadRequestException('通知无效，app_id 不一致');
         }
+
         if($notify['trade_status'] === 'TRADE_FINISHED' || $notify['trade_status'] === 'TRADE_SUCCESS') {
             $charge['status'] = Charge::STATUS_SUCCEEDED;
             $charge['paid_at'] = $notify['gmt_payment'];

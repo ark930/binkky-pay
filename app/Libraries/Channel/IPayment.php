@@ -91,9 +91,4 @@ abstract class IPayment
             'charge' => Charge::find($chargeId),
         ];
     }
-
-//    protected function getNotifyUrl()
-//    {
-//        return env('NOTIFY_BASE_URL') . '/charges/%s/notify';
-//    }
 }
