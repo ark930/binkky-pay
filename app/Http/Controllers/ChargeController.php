@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Libraries\Channel\Payment;
+use App\Libraries\HttpClient;
 use App\Models\Charge;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -22,6 +23,7 @@ class ChargeController extends Controller
             'title'         => 'required',
             'desc'          => 'required',
             'client_ip'     => 'required|ip',
+            'notify_url'    => 'required|url',
 
             // 可选参数
             'expired_at'    => 'filled|date',
@@ -38,6 +40,7 @@ class ChargeController extends Controller
         $charge['desc'] = $request->input('desc');
         $charge['currency'] = $request->input('currency');
         $charge['client_ip'] = $request->input('client_ip');
+        $charge['notify_url'] = $request->input('notify_url');
 
         if($request->has('expired_at')) {
             if(strtotime($request->input('expired_at')) > time()) {
@@ -56,8 +59,6 @@ class ChargeController extends Controller
             ]);
             $charge['auth_code'] = $request->input('open_id');
         }
-        $charge->save();
-        $charge['notify_url'] = $this->makeNotifyUrl($charge['id']);
         $charge->save();
 
         if($this->isTesting($request)) {
@@ -90,28 +91,33 @@ class ChargeController extends Controller
         return response($charge, 200);
     }
 
-    public function notify(Request $request, $charge_id)
+    public function notify(Request $request, $chargeId)
     {
-        Log::info($request->method() . ' ' . $request->fullUrl());
-        Log::info(\GuzzleHttp\json_encode($request->all()));
+        // 记录日志
+        Log::info(PHP_EOL . $request->method() . ' ' . $request->fullUrl() . PHP_EOL
+            . $request->getContentType() . PHP_EOL
+            . \GuzzleHttp\json_encode($request->all(), JSON_PRETTY_PRINT) . PHP_EOL
+            . $request->getContent() . PHP_EOL);
 
-        $charge = Charge::findOrFail($charge_id);
+        // 如果已支付完成，直接返回 success
+        $charge = Charge::findOrFail($chargeId);
         $channel = $charge['channel'];
         $status = $charge['status'];
         if($status === Charge::STATUS_SUCCEEDED || $status === Charge::STATUS_CLOSED) {
             return response('success', 200);
         }
 
+        // 验证并处理渠道通知
         $notify = $request->all();
         $payment = Payment::make($channel);
-        $data = $payment->notify($charge, $notify);
+        $charge = $payment->notify($charge, $notify);
 
-        return response($data, 200);
-    }
+        // TODO 通知商户。后面要改为异步处理
+        $client = new HttpClient();
+        $client->initHttpClient();
+        $res = $client->requestJson('POST', $charge['notify_url'], $charge);
 
-    protected function makeNotifyUrl($charge_id)
-    {
-        return route('notify', ['charge_id' => $charge_id]);
+        return response('success', 200);
     }
 
     private function isTesting(Request $request)
