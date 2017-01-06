@@ -1,21 +1,43 @@
-# Lumen PHP Framework
+# Binkky Payment API
 
-[![Build Status](https://travis-ci.org/laravel/lumen-framework.svg)](https://travis-ci.org/laravel/lumen-framework)
-[![Total Downloads](https://poser.pugx.org/laravel/lumen-framework/d/total.svg)](https://packagist.org/packages/laravel/lumen-framework)
-[![Latest Stable Version](https://poser.pugx.org/laravel/lumen-framework/v/stable.svg)](https://packagist.org/packages/laravel/lumen-framework)
-[![Latest Unstable Version](https://poser.pugx.org/laravel/lumen-framework/v/unstable.svg)](https://packagist.org/packages/laravel/lumen-framework)
-[![License](https://poser.pugx.org/laravel/lumen-framework/license.svg)](https://packagist.org/packages/laravel/lumen-framework)
+第三方支付聚合API
 
-Laravel Lumen is a stunningly fast PHP micro-framework for building web applications with expressive, elegant syntax. We believe development must be an enjoyable, creative experience to be truly fulfilling. Lumen attempts to take the pain out of development by easing common tasks used in the majority of web projects, such as routing, database abstraction, queueing, and caching.
+## 适用对象
 
-## Official Documentation
+- Binkky Merchat API
+- 第三方开发者
 
-Documentation for the framework can be found on the [Lumen website](http://lumen.laravel.com/docs).
+## 技术架构
 
-## Security Vulnerabilities
+- PHP 7.0 / Lumen 5.3
+- MySQL 5.7
+- Redis 3.x
+- ElasticSearch 5.x
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell at taylor@laravel.com. All security vulnerabilities will be promptly addressed.
+## 功能
 
-## License
+## API
 
-The Lumen framework is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT)
+### Authentication 认证
+
+### Errors 错误处理
+使用 HTTP 状态码来表明一个 API 请求的成功或失败。通常，返回值 2xx 表明 API 请求成功。
+返回值 4xx 表明 API 请求时被提供了错误的信息（比如参数缺失，参数错误，支付渠道错误等）。
+返回值 5xx 表明 API 请求时，Ping++ 服务器发生了错误。
+###### 属性 ######
+参数 | 描述
+---- | ----
+type | 错误类型，可以是`invalid_request_error`、`api_error`或是`channel_error`。
+message | 返回具体的错误描述。
+code | **optional** 错误码，因为第三方支付渠道返回的错误代码。
+param | **optional** 当发生参数错误时返回具体的参数名，如`id`。
+
+### HTTP 状态码 ###
+200 OK - 一切正常。  
+400 Bad Request - 请求失败。  
+401 Unauthorized - 接口未授权。  
+402 Request Failed - 参数格式正确但是请求失败，一般由业务错误引起。
+404 Not Found - 请求的资源不存在。  
+422 Unprocessable Entity - 参数验证失败。  
+429 - Too Many Requests
+5xx Server errors - 服务器内部错误。  
