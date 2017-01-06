@@ -45,11 +45,11 @@ trait HttpClientTrait
     public function request($method, $url, $options = [])
     {
         try {
-            Log::info($method . ' ' . $url);
+            Log::info($method . ' ' . $url . PHP_EOL . \GuzzleHttp\json_encode($options));
             $res = $this->httpClient->request($method, $url, $options);
             $body =  $res->getBody();
             $content = $body->getContents();
-            Log::info($content);
+            Log::info($content.PHP_EOL);
             return $content;
         } catch (Exception $e) {
             $this->exceptionHandler($e);
