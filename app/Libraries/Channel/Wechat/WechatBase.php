@@ -3,6 +3,7 @@
 namespace App\Libraries\Channel\Wechat;
 
 use App\Exceptions\APIException;
+use App\Exceptions\BadRequestException;
 use App\Libraries\Channel\Helper;
 use App\Libraries\Channel\IPayment;
 use App\Models\Charge;
@@ -95,7 +96,31 @@ class WechatBase extends IPayment
 
     public function notify(Charge $charge, array $notify)
     {
+        $sign = $notify['sign'];
+//        Helper::removeKeys($notify, ['sign', 'sign_type']);
+//        $signString = $this->getSignContent($notify);
+//        openssl_verify($signString, base64_decode($sign), $this->alipayPublicKey);
 
+        if(empty($notify['total_fee']) || $charge['amount'] != $notify['total_fee']) {
+            throw new BadRequestException('通知无效，total_fee 不一致');
+        } else if(empty($notify['out_trade_no']) || $charge['trade_no'] != $notify['out_trade_no']) {
+            throw new BadRequestException('通知无效，out_trade_no 不一致');
+        } else if(empty($notify['appid']) || $this->appId != $notify['app_id']) {
+            throw new BadRequestException('通知无效，app_id 不一致');
+        }
+
+        if($notify['return_code'] === 'SUCCESS') {
+            if($notify['result_code'] === 'SUCCESS') {
+                $charge['status'] = Charge::STATUS_SUCCEEDED;
+                $charge['paid_at'] = date('Y-m-d H:i:s', strtotime($notify['time_end']));
+                $charge['tn'] = $notify['transaction_id'];
+                $charge->save();
+
+                return $charge;
+            }
+        }
+
+        throw new BadRequestException('通知无效');
     }
 
     public function refund(Charge $charge, Refund $refund)

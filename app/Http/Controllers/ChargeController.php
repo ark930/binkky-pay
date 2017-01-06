@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Libraries\Channel\Helper;
 use App\Libraries\Channel\Payment;
 use App\Libraries\HttpClient;
 use App\Models\Charge;
@@ -108,7 +109,13 @@ class ChargeController extends Controller
         }
 
         // 验证并处理渠道通知
-        $notify = $request->all();
+        if($charge['channel'] === Charge::CHANNEL_WECHAT) {
+            $notify = $request->getContent();
+            $notify = Helper::xmlToArray($notify);
+        } else {
+            $notify = $request->all();
+        }
+
         $payment = Payment::make($channel);
         $charge = $payment->notify($charge, $notify);
 
@@ -117,7 +124,12 @@ class ChargeController extends Controller
         $client->initHttpClient();
         $res = $client->requestJson('POST', $charge['notify_url'], $charge);
 
-        return response('success', 200);
+        if($charge['channel'] === Charge::CHANNEL_WECHAT) {
+            $success = '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
+            return response($success, 200);
+        } else {
+            return response('success', 200);
+        }
     }
 
     private function isTesting(Request $request)
