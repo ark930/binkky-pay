@@ -105,7 +105,7 @@ class ChargeController extends Controller
         $channel = $charge['channel'];
         $status = $charge['status'];
         if($status === Charge::STATUS_SUCCEEDED || $status === Charge::STATUS_CLOSED) {
-            return response('success', 200);
+            return $this->notifyResponse($charge);
         }
 
         // 验证并处理渠道通知
@@ -124,6 +124,11 @@ class ChargeController extends Controller
         $client->initHttpClient();
         $res = $client->requestJson('POST', $charge['notify_url'], $charge);
 
+        return $this->notifyResponse($charge);
+    }
+
+    protected function notifyResponse(Charge $charge)
+    {
         if($charge['channel'] === Charge::CHANNEL_WECHAT) {
             $success = '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
             return response($success, 200);

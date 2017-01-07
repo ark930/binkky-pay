@@ -259,9 +259,6 @@ class WechatBase extends IPayment
 
         $signString = Helper::joinToString($signArray).'&key='.$key;
 
-//        $signed_array = $this->normalize_req($req);
-//        $signString = $this->create_query_string($signed_array).'&key='.$key;
-
         return strtoupper(md5($signString));
     }
 
