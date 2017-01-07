@@ -19,9 +19,11 @@ class UnionPayBase extends IPayment
         'cny' => '156',
     ];
     const TRANSACTION_TYPES = [
+        'query' => '00',
         'sale' => '01',
     ];
     const TRANSACTION_SUB_TYPES = [
+        'query' => '00',
         'sale' => '01',
     ];
     const BIZ_TYPES = [
@@ -92,12 +94,33 @@ hk75g2vUSxYOs9AT25a0sb7IHHi+COOHQfpB8xWjt0PJCccGiYQiKqqNU5pGkzUQ
 
     public function query(Charge $charge)
     {
-
+        $req = [
+            'version'       => self::VERSION_5_0_0,
+            'encoding'      => self::ENCODING,
+            'certId'        => $this->certId,
+            'signMethod'    => self::SIGN_TYPE_RSA,
+            'txnType'       => self::TRANSACTION_TYPES['query'],
+            'txnSubType'    => self::TRANSACTION_SUB_TYPES['query'],
+            'bizType'       => self::BIZ_TYPES['B2C'],
+            'accessType'    => self::ACCESS_TYPE['merchant'],
+            'orderId'       => $charge['trade_no'],
+            'merId'         => $this->merId,
+//            'queryId'       => $charge['transaction_no']
+        ];
+        $req = $this->signArray($req, $this->certPrivateKey);
     }
 
     public function notify(Charge $charge, array $notify)
     {
+//        $this->verify($notify, $cert);
 
+        return [
+            'paid'           => TRUE,
+            'transaction_no' => $notify['queryId'],
+            'time_paid'      => strtotime($notify['txnTime']),
+            'amount'         => intval($notify['settleAmt']),
+            'raw_code'       => $notify['respCode']
+        ];
     }
 
     public function refund(Charge $charge, Refund $refund)
@@ -123,6 +146,13 @@ hk75g2vUSxYOs9AT25a0sb7IHHi+COOHQfpB8xWjt0PJCccGiYQiKqqNU5pGkzUQ
         return $signArray;
     }
 
+    protected function verify($signString, $sign, $privateKey)
+    {
+        if (openssl_verify($signString, base64_decode($sign), $privateKey) !== 1) {
+
+        }
+    }
+
     protected function formatTime($time)
     {
         if(empty($time)) {
@@ -131,4 +161,5 @@ hk75g2vUSxYOs9AT25a0sb7IHHi+COOHQfpB8xWjt0PJCccGiYQiKqqNU5pGkzUQ
 
         return date('YmdHis', strtotime($time));
     }
+
 }
