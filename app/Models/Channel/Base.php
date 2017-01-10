@@ -7,12 +7,12 @@ use Illuminate\Support\Facades\Redis;
 
 abstract class Base extends Model
 {
-    public static function getPaymentParameters()
+    public static function getPaymentParameters($partnerId)
     {
         $channelName = static::channelName();
         $data = Redis::command('HGETALL', [$channelName]);
         if(empty($data)) {
-            $data = static::getFromDatabase();
+            $data = static::getFromDatabase($partnerId);
             $data = collect($data)->toArray();
 
             $hashData = [$channelName];
@@ -26,7 +26,7 @@ abstract class Base extends Model
         return $data;
     }
 
-    abstract protected static function getFromDatabase();
+    abstract protected static function getFromDatabase($partnerId);
 
     abstract protected static function channelName();
 }

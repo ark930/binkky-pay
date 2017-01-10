@@ -24,6 +24,7 @@ class Charge extends Model
 
     protected $hidden = [
 //        'id',
+        'partner_id',
         'notify_url',
     ];
 
