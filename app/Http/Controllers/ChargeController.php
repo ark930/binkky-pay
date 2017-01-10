@@ -53,17 +53,19 @@ class ChargeController extends Controller
                 $charge['expired_at'] = $request->input('expired_at');
             }
         }
+
+        $params = [];
         if($charge['type'] == Charge::TYPE_SCAN) {
             $this->validate($request, [
                 'auth_code' => 'required',
             ]);
-            $charge['auth_code'] = $request->input('auth_code');
+            $params['auth_code'] = $request->input('auth_code');
         }
         else if($charge['type'] == Charge::TYPE_PUB) {
             $this->validate($request, [
                 'open_id' => 'required',
             ]);
-            $charge['auth_code'] = $request->input('open_id');
+            $params['auth_code'] = $request->input('open_id');
         }
         $charge->save();
 
@@ -73,7 +75,7 @@ class ChargeController extends Controller
             $payment = Payment::make($charge['channel'], $partnerId, $charge['type']);
         }
 
-        $charge = $payment->charge($charge);
+        $charge = $payment->charge($charge, $params);
 
         return response($charge, 200);
     }

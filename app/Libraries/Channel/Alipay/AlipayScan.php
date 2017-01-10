@@ -10,7 +10,7 @@ class AlipayScan extends AlipayBase
     const SCENE_BAR_CODE = 'bar_code';
     const SCENE_WAVE_CODE = 'wave_code';
 
-    public function charge(Charge $charge)
+    public function charge(Charge $charge, array $params = [])
     {
         $bizContent = [
             'subject'           => $charge['title'],
@@ -18,7 +18,7 @@ class AlipayScan extends AlipayBase
             'out_trade_no'      => $charge['trade_no'],
             'total_amount'      => $this->formatAmount($charge['amount']),
             'scene'             => self::SCENE_BAR_CODE,
-            'auth_code'         => $charge['auth_code'],
+            'auth_code'         => $params['auth_code'],
         ];
 
         if(!empty($charge['expired_at'])) {

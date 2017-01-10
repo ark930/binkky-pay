@@ -8,7 +8,7 @@ use App\Models\Charge;
 
 class WechatPub extends WechatBase
 {
-    public function charge(Charge $charge)
+    public function charge(Charge $charge, array $params = [])
     {
         $req = [
             'appid'            => $this->appId,

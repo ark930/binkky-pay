@@ -8,7 +8,7 @@ use App\Models\Charge;
 
 class WechatScan extends WechatBase
 {
-    public function charge(Charge $charge)
+    public function charge(Charge $charge, array $params = [])
     {
         $req = [
             'appid'            => $this->appId,
@@ -20,7 +20,7 @@ class WechatScan extends WechatBase
             'spbill_create_ip' => $charge['client_ip'],
             'time_start'       => $this->formatTime($charge['created_at']),
             'time_expire'      => $this->formatTime($charge['expired_at']),
-            'auth_code'        => $charge['auth_code'],
+            'auth_code'        => $params['auth_code'],
         ];
 
         $req['sign'] = $this->signArray($req, $this->key);

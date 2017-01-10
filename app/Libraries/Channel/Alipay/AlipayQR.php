@@ -7,7 +7,7 @@ use App\Models\Charge;
 
 class AlipayQR extends AlipayBase
 {
-    public function charge(Charge $charge)
+    public function charge(Charge $charge, array $params = [])
     {
         $bizContent = [
             'subject'           => $charge['title'],

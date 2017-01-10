@@ -53,7 +53,7 @@ class WechatBase extends IPayment
         $this->key = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ123456';
     }
 
-    public function query(Charge $charge)
+    public function query(Charge $charge, array $params = [])
     {
         $req = [
             'appid'             => $this->appId,

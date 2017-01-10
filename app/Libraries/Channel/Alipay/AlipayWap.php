@@ -6,7 +6,7 @@ use App\Models\Charge;
 
 class AlipayWap extends AlipayBase
 {
-    public function charge(Charge $charge)
+    public function charge(Charge $charge, array $params = [])
     {
         $bizContent = [
             'subject'           => $charge['title'],
