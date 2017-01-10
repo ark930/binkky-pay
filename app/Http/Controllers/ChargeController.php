@@ -6,6 +6,8 @@ use App\Libraries\Channel\Helper;
 use App\Libraries\Channel\Payment;
 use App\Libraries\HttpClient;
 use App\Models\Charge;
+use App\Models\Key;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -13,6 +15,8 @@ class ChargeController extends Controller
 {
     public function create(Request $request)
     {
+        $partnerId = $this->checkAuth($request);
+
         // 参数验证
         $this->validate($request, [
             // 必要参数
@@ -33,6 +37,7 @@ class ChargeController extends Controller
         ]);
 
         $charge = new Charge();
+        $charge['partner_id'] = $partnerId;
         $charge['channel'] = $request->input('channel');
         $charge['type'] = $request->input('type');
         $charge['trade_no'] = $request->input('trade_no');
@@ -65,7 +70,7 @@ class ChargeController extends Controller
         if($this->isTesting($request)) {
             $payment = Payment::makeTesting($charge['channel'], $charge['type']);
         } else {
-            $payment = Payment::make($charge['channel'], $charge['type']);
+            $payment = Payment::make($charge['channel'], $partnerId, $charge['type']);
         }
 
         $charge = $payment->charge($charge);
@@ -75,6 +80,8 @@ class ChargeController extends Controller
 
     public function query(Request $request, $charge_id)
     {
+        $this->checkAuth($request);
+
         $charge = Charge::findOrFail($charge_id);
         $channel = $charge['channel'];
         $status = $charge['status'];
@@ -85,7 +92,8 @@ class ChargeController extends Controller
         if($this->isTesting($request)) {
             $payment = Payment::makeTesting($channel);
         } else {
-            $payment = Payment::make($channel);
+            $partnerId = $charge['partner_id'];
+            $payment = Payment::make($channel, $partnerId);
         }
         $charge = $payment->query($charge);
 
@@ -116,7 +124,8 @@ class ChargeController extends Controller
             $notify = $request->all();
         }
 
-        $payment = Payment::make($channel);
+        $partnerId = $charge['partner_id'];
+        $payment = Payment::make($channel, $partnerId);
         $charge = $payment->notify($charge, $notify);
 
         // TODO 通知商户。后面要改为异步处理
@@ -144,5 +153,35 @@ class ChargeController extends Controller
         }
 
         return false;
+    }
+
+    /**
+     * 只有合法的 App id 和 App key 才能调用接口
+     * @param Request $request
+     * @return mixed
+     * @throws AuthenticationException
+     */
+    protected function checkAuth(Request $request)
+    {
+        if($this->isTesting($request)) {
+            return 0;
+        }
+
+        if($request->hasHeader('X-APP-ID')
+            && $request->hasHeader('X-APP-KEY')) {
+
+            $appId = $request->header('X-APP-ID');
+            $appKey = $request->header('X-APP-KEY');
+
+            $key = Key::where('app_id', $appId)
+                ->where('app_key', $appKey)
+                ->first();
+
+            if(!empty($key)) {
+                return $key['partner_id'];
+            }
+        }
+
+        throw new AuthenticationException();
     }
 }

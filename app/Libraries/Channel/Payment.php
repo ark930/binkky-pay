@@ -27,12 +27,12 @@ class Payment
     const PAYMENT_WAP = 'wap';
     const PAYMENT_PUB = 'pub';
 
-    public static function make($channelName, $paymentType = null, $isTesting = false)
+    public static function make($channelName, $partnerId, $paymentType = null, $isTesting = false)
     {
         $payment = null;
 
         if($channelName === self::CHANNEL_ALIPAY) {
-            $channelParams = ChannelAlipay::getPaymentParameters();
+            $channelParams = ChannelAlipay::getPaymentParameters($partnerId);
 
             if($paymentType === null) {
                 $payment = new AlipayBase($channelParams);
@@ -44,7 +44,7 @@ class Payment
                 $payment = new AlipayScan($channelParams);
             }
         } else if($channelName === self::CHANNEL_WECHAT) {
-            $channelParams = ChannelWechat::getPaymentParameters();
+            $channelParams = ChannelWechat::getPaymentParameters($partnerId);
 
             if($paymentType === null) {
                 $payment = new WechatBase($channelParams);
@@ -56,7 +56,7 @@ class Payment
                 $payment = new WechatScan($channelParams);
             }
         } else if($channelName === self::CHANNEL_UNION_PAY) {
-            $channelParams = ChannelUnionPay::getPaymentParameters();
+            $channelParams = ChannelUnionPay::getPaymentParameters($partnerId);
 
             if($paymentType === null) {
                 $payment = new UnionPayBase($channelParams);
@@ -74,6 +74,6 @@ class Payment
 
     public static function makeTesting($channelName, $paymentType = null)
     {
-        return static::make($channelName, $paymentType, true);
+        return static::make($channelName, 0, $paymentType, true);
     }
 }

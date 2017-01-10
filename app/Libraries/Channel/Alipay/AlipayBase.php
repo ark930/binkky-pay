@@ -332,12 +332,16 @@ IahD+bMuiSuayY2k1zGhAkAec+NXdmO8GKxQeAag3wUcko6y8TwMzhVHuj/FrUl1
 
     protected function parseResponse($response, $key)
     {
-        $sign = $response['sign'];
-        if(empty($sign)) {
-            throw new APIException('返回数据解析错误');
+        $data = $response[$key];
+        if($data['code'] != '10000') {
+            throw new BadRequestException('请求失败:' . $data['code'] . ' => ' . $data['sub_msg']);
         }
 
-        $data = $response[$key];
+        if(empty($response['sign'])) {
+            throw new APIException('返回数据解析错误');
+        }
+        $sign = $response['sign'];
+
         if($this->verify($data, $sign, $this->alipayPublicKey) === false) {
             throw new APIException('返回数据签名验证失败');
         }

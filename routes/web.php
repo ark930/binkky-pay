@@ -11,9 +11,6 @@
 |
 */
 
-//$app->get('/', function () use ($app) {
-//    return $app->version();
-//});
 $app->get('/', 'ExampleController@test');
 
 $app->group(['prefix' => 'v1'], function() use ($app) {
@@ -33,6 +30,12 @@ $app->group(['prefix' => 'v1'], function() use ($app) {
         $app->get('alipay', 'Channels\AlipayController@show');
         $app->post('wechat', 'Channels\WechatController@store');
         $app->get('wechat', 'Channels\WechatController@show');
+    });
+
+    $app->group(['prefix' => 'keys'], function() use($app) {
+        $app->post('/', 'KeyController@store');
+        $app->get('/{partner_id}', 'KeyController@show');
+        $app->put('/{partner_id}', 'KeyController@update');
     });
 });
 
