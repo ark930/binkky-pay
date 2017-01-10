@@ -15,6 +15,7 @@ class CreateChargesTable extends Migration
     {
         Schema::create('charges', function(Blueprint $table) {
             $table->bigIncrements('id');
+            $table->unsignedInteger('partner_id')->comment('合作方ID');
             $table->enum('channel', ['alipay', 'wechat', 'union_pay'])->comment('渠道名称');
             $table->enum('type', ['qr', 'scan', 'pub', 'wap'])->comment('支付类型');
             $table->string('trade_no', 64)->collation('utf8_bin')->comment('商户交易单号');
@@ -33,6 +34,8 @@ class CreateChargesTable extends Migration
             $table->timestamp('paid_at')->nullable()->comment('支付完成时间');
             $table->timestamp('expired_at')->nullable()->comment('支付过期时间');
             $table->timestamps();
+
+            $table->index('partner_id');
         });
     }
 

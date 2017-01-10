@@ -14,12 +14,11 @@ class CreateKeysTable extends Migration
     public function up()
     {
         Schema::create('keys', function(Blueprint $table) {
-            $table->char('key', 20)->comment('接口密钥');
-            $table->unsignedInteger('partner_id')->comment('合作方ID');
-            $table->timestamp('created_at');
+            $table->increments('partner_id')->comment('合作方ID, 对应线下门店或者线上APP');
+            $table->char('app_id', 18)->unique()->commnet('接口应用ID');
+            $table->char('app_key', 32)->unique()->comment('接口密钥');
+            $table->timestamps();
             $table->softDeletes();
-            $table->primary(['key', 'partner_id']);
-            $table->unique('key');
         });
     }
 
