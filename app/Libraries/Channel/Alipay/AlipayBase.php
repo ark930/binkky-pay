@@ -139,12 +139,13 @@ IahD+bMuiSuayY2k1zGhAkAec+NXdmO8GKxQeAag3wUcko6y8TwMzhVHuj/FrUl1
             $charge['status'] = Charge::STATUS_SUCCEEDED;
             $charge['paid_at'] = $notify['gmt_payment'];
             $charge['tn'] = $notify['trade_no'];
-            $charge['openid'] = isset($notify['buyer_id']) ? $notify['buyer_id'] : '' ;
+            $charge['payer_id'] = isset($notify['buyer_id']) ? $notify['buyer_id'] : '' ;
             $charge->save();
         } else if($notify['trade_status'] === 'TRADE_CLOSED') {
             $charge['status'] = Charge::STATUS_CLOSED;
             $charge['paid_at'] = $notify['gmt_payment'];
             $charge['tn'] = $notify['trade_no'];
+            $charge['payer_id'] = isset($notify['buyer_id']) ? $notify['buyer_id'] : '' ;
             $charge->save();
         }
 
