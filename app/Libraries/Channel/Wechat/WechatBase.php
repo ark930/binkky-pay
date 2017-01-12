@@ -114,7 +114,7 @@ class WechatBase extends IPayment
                 $charge['status'] = Charge::STATUS_SUCCEEDED;
                 $charge['paid_at'] = date('Y-m-d H:i:s', strtotime($notify['time_end']));
                 $charge['tn'] = $notify['transaction_id'];
-                $charge['openid'] = $notify['openid'];
+                $charge['payer_id'] = $notify['openid'];
                 $charge->save();
 
                 return $charge;
