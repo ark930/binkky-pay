@@ -2,29 +2,13 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Key;
 use Closure;
-use Illuminate\Contracts\Auth\Factory as Auth;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Http\Request;
 
 class Authenticate
 {
-    /**
-     * The authentication guard factory instance.
-     *
-     * @var \Illuminate\Contracts\Auth\Factory
-     */
-    protected $auth;
-
-    /**
-     * Create a new middleware instance.
-     *
-     * @param  \Illuminate\Contracts\Auth\Factory  $auth
-     * @return void
-     */
-    public function __construct(Auth $auth)
-    {
-        $this->auth = $auth;
-    }
-
     /**
      * Handle an incoming request.
      *
@@ -32,13 +16,41 @@ class Authenticate
      * @param  \Closure  $next
      * @param  string|null  $guard
      * @return mixed
+     * @throws AuthenticationException
      */
     public function handle($request, Closure $next, $guard = null)
     {
-        if ($this->auth->guard($guard)->guest()) {
-            return response('Unauthorized.', 401);
+        // 只有合法的 App id 和 App key 才能调用接口
+        if($request->hasHeader('X-APP-ID') && $request->hasHeader('X-APP-KEY')) {
+
+            $appId = $request->header('X-APP-ID');
+            $appKey = $request->header('X-APP-KEY');
+
+            $key = Key::where('app_id', $appId)
+                ->where('app_key', $appKey)
+                ->first();
+
+            if(!empty($key)) {
+                if($this->isTesting($request)) {
+                    $request->attributes->add(['is_testing' => true]);
+                } else {
+                    $request->attributes->add(['is_testing' => false]);
+                }
+                $request->attributes->add(['partner_id' => $key['partner_id']]);
+
+                return $next($request);
+            }
         }
 
-        return $next($request);
+        throw new AuthenticationException();
+    }
+
+    private function isTesting(Request $request)
+    {
+        if($request->hasHeader('X-Testing') && $request->header('X-Testing') == 'true') {
+            return true;
+        }
+
+        return false;
     }
 }

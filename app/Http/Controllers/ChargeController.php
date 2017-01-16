@@ -6,8 +6,6 @@ use App\Libraries\Channel\Helper;
 use App\Libraries\Channel\Payment;
 use App\Libraries\HttpClient;
 use App\Models\Charge;
-use App\Models\Key;
-use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -15,7 +13,7 @@ class ChargeController extends Controller
 {
     public function create(Request $request)
     {
-        $partnerId = $this->checkAuth($request);
+        $partnerId = $request->get('partner_id');
 
         // 参数验证
         $this->validate($request, [
@@ -69,7 +67,7 @@ class ChargeController extends Controller
         }
         $charge->save();
 
-        if($this->isTesting($request)) {
+        if($request->get('is_testing')) {
             $payment = Payment::makeTesting($charge['channel'], $charge['type']);
         } else {
             $payment = Payment::make($charge['channel'], $partnerId, $charge['type']);
@@ -82,8 +80,6 @@ class ChargeController extends Controller
 
     public function query(Request $request, $charge_id)
     {
-        $this->checkAuth($request);
-
         $charge = Charge::findOrFail($charge_id);
         $channel = $charge['channel'];
         $status = $charge['status'];
@@ -91,7 +87,7 @@ class ChargeController extends Controller
             return $charge;
         }
 
-        if($this->isTesting($request)) {
+        if($request->get('is_testing')) {
             $payment = Payment::makeTesting($channel);
         } else {
             $partnerId = $charge['partner_id'];
@@ -146,44 +142,5 @@ class ChargeController extends Controller
         } else {
             return response('success', 200);
         }
-    }
-
-    private function isTesting(Request $request)
-    {
-        if($request->hasHeader('X-Testing') && $request->header('X-Testing') == 'true') {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * 只有合法的 App id 和 App key 才能调用接口
-     * @param Request $request
-     * @return mixed
-     * @throws AuthenticationException
-     */
-    protected function checkAuth(Request $request)
-    {
-        if($this->isTesting($request)) {
-            return 0;
-        }
-
-        if($request->hasHeader('X-APP-ID')
-            && $request->hasHeader('X-APP-KEY')) {
-
-            $appId = $request->header('X-APP-ID');
-            $appKey = $request->header('X-APP-KEY');
-
-            $key = Key::where('app_id', $appId)
-                ->where('app_key', $appKey)
-                ->first();
-
-            if(!empty($key)) {
-                return $key['partner_id'];
-            }
-        }
-
-        throw new AuthenticationException();
     }
 }

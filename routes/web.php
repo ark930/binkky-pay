@@ -13,7 +13,7 @@
 
 $app->get('/', 'ExampleController@test');
 
-$app->group(['prefix' => 'v1'], function() use ($app) {
+$app->group(['middleware' => 'auth', 'prefix' => 'v1'], function() use ($app) {
     $app->post('charges', 'ChargeController@create');
     $app->get('charges/{charge_id}', 'ChargeController@query');
 //    $app->get('charges/{charge_id}/close', 'ChargeController@close');

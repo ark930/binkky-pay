@@ -54,7 +54,7 @@ class Handler extends ExceptionHandler
             return response()->json(['msg' => $e->getMessage()], $e->getCode());
         } else if ($e instanceof ModelNotFoundException) {
             return response()->json(['msg' => '资源不存在'], 404);
-        } else if ($e instanceof NotFoundHttpException){
+        } else if ($e instanceof NotFoundHttpException) {
             return response()->json(['msg' => '链接不存在'], 404);
         } else if ($e instanceof AuthenticationException) {
             return response()->json(['msg' => '未授权'], 401);
