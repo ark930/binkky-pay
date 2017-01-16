@@ -11,7 +11,9 @@
 |
 */
 
-$app->get('/', 'ExampleController@test');
+$app->get('/', function() use ($app) {
+    return $app->version();
+});
 
 $app->group(['middleware' => 'auth', 'prefix' => 'v1'], function() use ($app) {
     // 支付接口
