@@ -48,7 +48,3 @@ $app->group(['middleware' => 'auth', 'prefix' => 'v1'], function() use ($app) {
 //        $app->put('/{partner_id}', 'KeyController@update');
 //    });
 });
-
-$app->get('/alipay_wap', 'ExampleController@alipayWap');
-
-$app->get('/wechat_qr', 'ExampleController@wechatQR');
