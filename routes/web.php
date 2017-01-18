@@ -15,38 +15,48 @@ $app->get('/', function() use ($app) {
     return $app->version();
 });
 
-$app->group(['middleware' => 'auth', 'prefix' => 'v1'], function() use ($app) {
-    // 支付接口
-    $app->post('charges', 'ChargeController@create');
+$app->group(['prefix' => 'v1'], function() use ($app) {
+    $app->group(['middleware' => 'auth'], function() use ($app) {
 
-    // 支付查询接口
-    $app->get('charges/{charge_id}', 'ChargeController@query');
+        // 支付类接口
+        $app->group(['prefix' => 'charges'], function() use ($app) {
+            // 支付接口
+            $app->post('/', 'ChargeController@create');
 
-    // 关闭支付接口
-//    $app->get('charges/{charge_id}/close', 'ChargeController@close');
+            // 支付查询接口
+            $app->get('{charge_id}', 'ChargeController@query');
 
-    // 支付异步通知接口
-    $app->get('charges/{charge_id}/notify', ['as' => 'notify', 'uses' => 'ChargeController@notify']);
-    $app->post('charges/{charge_id}/notify', 'ChargeController@notify');
+            // 关闭支付接口
+            //    $app->get('{charge_id}/close', 'ChargeController@close');
 
-    // 退款接口
-    $app->post('refunds', 'RefundController@create');
-    $app->get('refunds/{refund_id}', 'RefundController@query');
+            // 支付异步通知接口
+            $app->get('{charge_id}/notify', ['as' => 'notify', 'uses' => 'ChargeController@notify']);
+            $app->post('{charge_id}/notify', 'ChargeController@notify');
 
-    // 对账接口
-//    $app->get('charges/bill', 'ChargeController@bill');
+            // 对账接口
+            //    $app->get('bill', 'ChargeController@bill');
+        });
 
-    // 支付渠道参数接口
-    $app->group(['prefix' => 'channels'], function() use($app) {
-        $app->post('alipay', 'Channels\AlipayController@store');
-        $app->get('alipay', 'Channels\AlipayController@show');
-        $app->post('wechat', 'Channels\WechatController@store');
-        $app->get('wechat', 'Channels\WechatController@show');
+        // 退款类接口
+        $app->group(['prefix' => 'refunds'], function() use ($app) {
+            // 退款接口
+            $app->post('/', 'RefundController@create');
+            $app->get('{refund_id}', 'RefundController@query');
+        });
+
+        // 支付渠道参数类接口
+        $app->group(['prefix' => 'channels'], function() use($app) {
+            $app->post('alipay', 'Channels\AlipayController@store');
+            $app->get('alipay', 'Channels\AlipayController@show');
+            $app->post('wechat', 'Channels\WechatController@store');
+            $app->get('wechat', 'Channels\WechatController@show');
+        });
     });
 
-//    $app->group(['prefix' => 'keys'], function() use($app) {
-//        $app->post('/', 'KeyController@store');
-//        $app->get('/{partner_id}', 'KeyController@show');
-//        $app->put('/{partner_id}', 'KeyController@update');
-//    });
+    // API认证参数类接口
+    $app->group(['prefix' => 'keys'], function() use($app) {
+        $app->post('/', 'KeyController@store');
+        $app->get('{partner_id}', 'KeyController@show');
+        //   $app->put('/keys/{partner_id}', 'KeyController@update');
+    });
 });
