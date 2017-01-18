@@ -54,7 +54,7 @@ $app->group(['prefix' => 'v1'], function() use ($app) {
     });
 
     // API认证参数类接口
-    $app->group(['prefix' => 'keys'], function() use($app) {
+    $app->group(['prefix' => 'keys', 'middleware' => 'merchant.auth'], function() use($app) {
         $app->post('/', 'KeyController@store');
         $app->get('{partner_id}', 'KeyController@show');
         //   $app->put('/keys/{partner_id}', 'KeyController@update');
