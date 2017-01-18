@@ -4,6 +4,7 @@ namespace App\Exceptions;
 
 use Exception;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\QueryException;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -65,6 +66,8 @@ class Handler extends ExceptionHandler
                 'params' => $e->getResponse()->getData(),
             ];
             return response()->json(array_merge(['msg' => '参数验证失败'], (array)$errors), 422);
+        } else if($e instanceof QueryException) {
+            return response()->json(['msg' => '数据库错误'], 400);
         }
 
         return parent::render($request, $e);
