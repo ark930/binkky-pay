@@ -65,6 +65,7 @@ $app->singleton(
 
  $app->routeMiddleware([
      'auth' => App\Http\Middleware\Authenticate::class,
+     'merchant.auth' => App\Http\Middleware\MerchantApiAuth::class,
  ]);
 
 /*
