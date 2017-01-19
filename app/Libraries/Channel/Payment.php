@@ -72,8 +72,8 @@ class Payment
         return $payment;
     }
 
-    public static function makeTesting($channelName, $paymentType = null)
+    public static function makeTesting($channelName, $partnerId, $paymentType = null)
     {
-        return static::make($channelName, 0, $paymentType, true);
+        return static::make($channelName, $partnerId, $paymentType, true);
     }
 }

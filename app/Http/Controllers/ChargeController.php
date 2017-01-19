@@ -68,7 +68,7 @@ class ChargeController extends Controller
         $charge->save();
 
         if($request->get('is_testing')) {
-            $payment = Payment::makeTesting($charge['channel'], $charge['type']);
+            $payment = Payment::makeTesting($charge['channel'], $partnerId, $charge['type']);
         } else {
             $payment = Payment::make($charge['channel'], $partnerId, $charge['type']);
         }
@@ -81,6 +81,7 @@ class ChargeController extends Controller
     public function query(Request $request, $charge_id)
     {
         $charge = Charge::findOrFail($charge_id);
+        $partnerId = $charge['partner_id'];
         $channel = $charge['channel'];
         $status = $charge['status'];
         if($status === 'finish' || $status === 'close') {
@@ -88,9 +89,8 @@ class ChargeController extends Controller
         }
 
         if($request->get('is_testing')) {
-            $payment = Payment::makeTesting($channel);
+            $payment = Payment::makeTesting($channel, $partnerId);
         } else {
-            $partnerId = $charge['partner_id'];
             $payment = Payment::make($channel, $partnerId);
         }
         $charge = $payment->query($charge);
