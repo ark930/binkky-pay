@@ -14,7 +14,7 @@ class CreateKeysTable extends Migration
     public function up()
     {
         Schema::create('keys', function(Blueprint $table) {
-            $table->unsignedInteger('partner_id')->primary()->comment('合作方ID, 对应线下商户ID或者线上APP ID');
+            $table->increments('partner_id')->comment('合作方ID, 对应线下商户ID或者线上APP ID');
             $table->char('app_id', 18)->unique()->commnet('接口应用ID');
             $table->char('app_key', 32)->unique()->comment('接口密钥');
             $table->timestamps();

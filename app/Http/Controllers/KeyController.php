@@ -10,12 +10,7 @@ class KeyController extends Controller
 {
     public function store(Request $request)
     {
-        $this->validate($request, [
-            'partner_id' => 'required',
-        ]);
-
         $key = new Key();
-        $key['partner_id'] = $request->input('partner_id');
         $key['app_id'] = 'bk_' . strtolower(str_random(15));
         $key['app_key'] = strtolower(str_random(32));
         $key->save();
