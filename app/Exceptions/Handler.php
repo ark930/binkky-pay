@@ -68,6 +68,8 @@ class Handler extends ExceptionHandler
             return response()->json(array_merge(['msg' => '参数验证失败'], (array)$errors), 422);
         } else if($e instanceof QueryException) {
             return response()->json(['msg' => '数据库错误'], 400);
+        } else if($e instanceof ChannelNotAvailableException) {
+            return response()->json(['error' => $e->getError(), 'msg' => $e->getMessage()], $e->getCode());
         }
 
         return parent::render($request, $e);
