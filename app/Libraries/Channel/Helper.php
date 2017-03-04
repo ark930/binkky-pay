@@ -62,6 +62,17 @@ class Helper
         return $string;
     }
 
+    public static function joinToStringWithUrlEncode(array $data)
+    {
+        $string = '';
+        $i = 0;
+        foreach ($data as $k => $v) {
+            $string .= ($i++ === 0) ? "$k=" . urlencode($v) : "&$k=" . urlencode($v);
+        }
+
+        return $string;
+    }
+
     public static function xmlToArray($xml)
     {
         $array_data = json_decode(json_encode(simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA)), TRUE);

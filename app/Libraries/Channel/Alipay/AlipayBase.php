@@ -20,6 +20,7 @@ class AlipayBase extends IPayment
     const SIGN_TYPE_RSA = 'RSA';
     const CHARSET_UTF8 = 'UTF-8';
     const ACTIONS = [
+        'app.pay'       => 'alipay.trade.app.pay',
         'scan.pay'      => 'alipay.trade.pay',
         'qrcode.pay'    => 'alipay.trade.precreate',
         'wap.pay'       => 'alipay.trade.wap.pay',
@@ -322,7 +323,15 @@ IahD+bMuiSuayY2k1zGhAkAec+NXdmO8GKxQeAag3wUcko6y8TwMzhVHuj/FrUl1
         $string = Helper::joinToString($params);
         if(get_magic_quotes_gpc()){$string = stripslashes($string);}
         return $string;
+    }
 
+    protected function getSignContentWithUrlEncode($params)
+    {
+        $params = Helper::removeEmpty($params);
+        ksort($params);
+
+        $string = Helper::joinToStringWithUrlEncode($params);
+        return $string;
     }
 
     protected function sign($data, $privateKey) {
