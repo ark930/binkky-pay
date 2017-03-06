@@ -9,6 +9,7 @@ use App\Libraries\Channel\Alipay\AlipayScan;
 use App\Libraries\Channel\Alipay\AlipayWap;
 use App\Libraries\Channel\UnionPay\UnionPayBase;
 use App\Libraries\Channel\UnionPay\UnionPayWap;
+use App\Libraries\Channel\Wechat\WechatApp;
 use App\Libraries\Channel\Wechat\WechatBase;
 use App\Libraries\Channel\Wechat\WechatPub;
 use App\Libraries\Channel\Wechat\WechatQR;
@@ -58,6 +59,8 @@ class Payment
                 $payment = new WechatQR($channelParams);
             } else if($paymentType === self::PAYMENT_SCAN) {
                 $payment = new WechatScan($channelParams);
+            } else if($paymentType === self::PAYMENT_APP) {
+                $payment = new WechatApp($channelParams);
             }
         } else if($channelName === self::CHANNEL_UNION_PAY) {
             $channelParams = ChannelUnionPay::getPaymentParameters($partnerId);

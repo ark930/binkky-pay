@@ -28,6 +28,7 @@ class WechatBase extends IPayment
         'qr' => 'NATIVE',
         'scan' => 'MICROPAY',
         'pub' => 'JSAPI',
+        'app' => 'APP',
     ];
 
     // 微信参数变量
