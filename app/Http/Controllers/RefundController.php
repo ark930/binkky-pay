@@ -5,17 +5,22 @@ namespace App\Http\Controllers;
 use App\Libraries\Channel\Payment;
 use App\Models\Charge;
 use App\Models\Refund;
+use Illuminate\Http\Request;
 
 class RefundController extends Controller
 {
-    public function create()
+    public function create(Request $request)
     {
-        $charge_id = 1;
-        $charge = Charge::findOrFail($charge_id);
+        $partnerId = $request->get('partner_id');
+
+        $chargeId = $request->input('charge_id');
+        $amount = $request->input('amount');
+
+        $charge = Charge::findOrFail($chargeId);
 
         $refund = new Refund();
-        $refund['order_no'] = str_random(16);
-        $refund['amount'] = 1;
+        $refund['trade_no'] = str_random(16);
+        $refund['amount'] = $amount;
         $refund['currency'] = 'cny';
 
         $channel = $charge['channel'];
@@ -24,7 +29,7 @@ class RefundController extends Controller
             return $charge;
         }
 
-        $payment = Payment::make($channel);
+        $payment = Payment::make($channel, $partnerId);
         $data = $payment->refund($charge, $refund);
 
         return $data;

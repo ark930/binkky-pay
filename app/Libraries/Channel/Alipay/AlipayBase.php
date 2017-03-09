@@ -158,7 +158,7 @@ IahD+bMuiSuayY2k1zGhAkAec+NXdmO8GKxQeAag3wUcko6y8TwMzhVHuj/FrUl1
         $bizContent = [
             'refund_amount'     => $refund['amount'],
             'refund_reason'     => $refund['description'],
-            'out_request_no'    => $refund['order_no'],
+            'out_request_no'    => $refund['trade_no'],
 //            'operator_id'       => $refund['operator_id'],
 //            'store_id'          => $refund['store_id'],
 //            'terminal_id'       => $refund['terminal_id'],
