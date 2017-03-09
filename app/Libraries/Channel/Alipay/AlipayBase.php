@@ -255,9 +255,9 @@ IahD+bMuiSuayY2k1zGhAkAec+NXdmO8GKxQeAag3wUcko6y8TwMzhVHuj/FrUl1
 
         $requestUrl = $this->makeRequest($this->getAction('bill.check'), $bizContent);
 
-        $this->initHttpClient($this->getBaseUrl());
-        $body = $this->requestForm('GET', $requestUrl);
-        $body = \GuzzleHttp\json_decode($body);
+        $this->httpClient->initHttpClient($this->getBaseUrl());
+        $response = $this->httpClient->requestJson('GET', $requestUrl);
+        $body = \GuzzleHttp\json_decode($response, true);
 
         $sign = $body['sign'];
         $preSignStr = $this->getSignContent($body['alipay_data_dataservice_bill_downloadurl_query_response']);

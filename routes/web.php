@@ -44,6 +44,11 @@ $app->group(['prefix' => 'v1'], function() use ($app) {
             $app->get('{refund_id}', 'RefundController@query');
         });
 
+        // 对账接口
+        $app->group(['prefix' => 'bill'], function() use($app) {
+            $app->get('{channel}', 'ChargeController@queryBill');
+        });
+
         // 支付渠道参数类接口
         $app->group(['prefix' => 'channels'], function() use($app) {
             $app->post('alipay', 'Channels\AlipayController@store');

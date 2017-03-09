@@ -134,6 +134,14 @@ class ChargeController extends Controller
         return $this->notifyResponse($charge);
     }
 
+    public function queryBill(Request $request)
+    {
+        $partnerId = $request->get('partner_id');
+
+        $payment = Payment::make('alipay', $partnerId);
+        return $payment->billQuery(['bill_type'=>'signcustomer', 'bill_date' => '2017-03-08']);
+    }
+
     protected function notifyResponse(Charge $charge)
     {
         if($charge['channel'] === Charge::CHANNEL_WECHAT) {
