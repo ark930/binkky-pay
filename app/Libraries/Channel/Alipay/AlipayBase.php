@@ -153,10 +153,26 @@ IahD+bMuiSuayY2k1zGhAkAec+NXdmO8GKxQeAag3wUcko6y8TwMzhVHuj/FrUl1
         return $charge;
     }
 
+    /**
+     *
+        {
+            "code": "10000",
+            "msg": "Success",
+            "buyer_logon_id": "135****6353",
+            "buyer_user_id": "2088612340956569",
+            "fund_change": "Y",
+            "gmt_refund_pay": "2017-03-09 22:27:20",
+            "open_id": "20880050150929799364503682415256",
+            "out_trade_no": "123456GGAwfweff43535FD",
+            "refund_fee": "0.01",
+            "send_back_fee": "0.00",
+            "trade_no": "2017030821001004560256779757"
+        }
+     */
     public function refund(Charge $charge, Refund $refund)
     {
         $bizContent = [
-            'refund_amount'     => $refund['amount'],
+            'refund_amount'     => $refund['amount'] / 100,
             'refund_reason'     => $refund['description'],
             'out_request_no'    => $refund['trade_no'],
 //            'operator_id'       => $refund['operator_id'],
@@ -171,13 +187,17 @@ IahD+bMuiSuayY2k1zGhAkAec+NXdmO8GKxQeAag3wUcko6y8TwMzhVHuj/FrUl1
         }
 
         $requestUrl = $this->makeRequest($this->getAction('refund'), $bizContent, $refund['created_at']);
-
         $this->httpClient->initHttpClient($this->getBaseUrl());
-        $response = $this->httpClient->requestJson('GET', $requestUrl);
+        $response = $this->httpClient->requestPlainText('GET', $requestUrl);
+        $response = \GuzzleHttp\json_decode($response, true);
+        $res = $this->parseResponse($response, $this->getResponseKey('refund'));
 
-        $data = $this->parseResponse($response, $this->getResponseKey('refund'));
+        if($res['code'] === self::RESPONSE_CODE['success']) {
+            $refund['status'] = Refund::STATUS_SUCCEEDED;
+            $refund->save();
+        }
 
-        return $data;
+        return $refund;
     }
 
     public function refundQuery(Charge $charge, Refund $refund)
@@ -191,9 +211,9 @@ IahD+bMuiSuayY2k1zGhAkAec+NXdmO8GKxQeAag3wUcko6y8TwMzhVHuj/FrUl1
         }
 
         $requestUrl = $this->makeRequest($this->getAction('refund.query'), $bizContent);
-
         $this->httpClient->initHttpClient($this->getBaseUrl());
-        $response = $this->httpClient->requestJson('GET', $requestUrl);
+        $response = $this->httpClient->requestPlainText('GET', $requestUrl);
+        $response = \GuzzleHttp\json_decode($response, true);
 
         $data = $this->parseResponse($response, $this->getResponseKey('refund.query'));
 

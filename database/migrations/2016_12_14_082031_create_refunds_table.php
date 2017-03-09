@@ -16,7 +16,7 @@ class CreateRefundsTable extends Migration
         Schema::create('refunds', function(Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('charge_id');
-            $table->string('order_no', 64)->comment('退款单号');
+            $table->string('trade_no', 64)->comment('退款单号');
             $table->string('transaction_no', 64)->nullable()->comment('第三方渠道退款单号');
             $table->unsignedInteger('amount')->comment('退款金额，以分为单位');
             $table->enum('currency', ['cny'])->comment('货币类型');

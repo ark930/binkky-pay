@@ -15,6 +15,7 @@ class RefundController extends Controller
 
         $chargeId = $request->input('charge_id');
         $amount = $request->input('amount');
+        $description = $request->input('description');
 
         $charge = Charge::findOrFail($chargeId);
 
@@ -22,6 +23,8 @@ class RefundController extends Controller
         $refund['trade_no'] = str_random(16);
         $refund['amount'] = $amount;
         $refund['currency'] = 'cny';
+        $refund['description'] = $description;
+        $refund->save();
 
         $channel = $charge['channel'];
         $status = $charge['status'];
@@ -30,13 +33,15 @@ class RefundController extends Controller
         }
 
         $payment = Payment::make($channel, $partnerId);
-        $data = $payment->refund($charge, $refund);
+        $refund = $payment->refund($charge, $refund);
 
-        return $data;
+        return $refund;
     }
 
-    public function query($refund_id)
+    public function query(Request $request, $refund_id)
     {
+        $partnerId = $request->get('partner_id');
+
         $refund = Refund::findOrFail($refund_id);
         $charge = $refund->charge;
 
@@ -46,9 +51,9 @@ class RefundController extends Controller
             return $charge;
         }
 
-        $payment = Payment::make($channel);
-        $data = $payment->refundQuery($charge, $refund);
+        $payment = Payment::make($channel, $partnerId);
+        $refund = $payment->refundQuery($charge, $refund);
 
-        return response($data, 200);
+        return $refund;
     }
 }
