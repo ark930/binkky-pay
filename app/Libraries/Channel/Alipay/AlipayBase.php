@@ -277,14 +277,11 @@ IahD+bMuiSuayY2k1zGhAkAec+NXdmO8GKxQeAag3wUcko6y8TwMzhVHuj/FrUl1
 
         $this->httpClient->initHttpClient($this->getBaseUrl());
         $response = $this->httpClient->requestJson('GET', $requestUrl);
-        $body = \GuzzleHttp\json_decode($response, true);
+        $response = \GuzzleHttp\json_decode($response, true);
 
-        $sign = $body['sign'];
-        $preSignStr = $this->getSignContent($body['alipay_data_dataservice_bill_downloadurl_query_response']);
+        $res = $this->parseResponse($response, $this->getResponseKey('bill.check'));
 
-        $ret = $this->verify($preSignStr, $sign, $this->alipayPublicKey);
-
-        return $body['alipay_data_dataservice_bill_downloadurl_query_response']['bill_download_url'];
+        return $res['bill_download_url'];
     }
 
     protected function request($params)
