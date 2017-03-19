@@ -29,10 +29,6 @@ $app->group(['prefix' => 'v1'], function() use ($app) {
             // 关闭支付接口
             //    $app->get('{charge_id}/close', 'ChargeController@close');
 
-            // 支付异步通知接口
-            $app->get('{charge_id}/notify', ['as' => 'notify', 'uses' => 'ChargeController@notify']);
-            $app->post('{charge_id}/notify', 'ChargeController@notify');
-
             // 对账接口
             //    $app->get('bill', 'ChargeController@bill');
         });
@@ -57,6 +53,10 @@ $app->group(['prefix' => 'v1'], function() use ($app) {
             $app->get('wechat', 'Channels\WechatController@show');
         });
     });
+
+    // 支付异步通知接口
+    $app->get('charges/{charge_id}/notify', ['as' => 'notify', 'uses' => 'ChargeController@notify']);
+    $app->post('charges/{charge_id}/notify', 'ChargeController@notify');
 
     // API认证参数类接口
     $app->group(['prefix' => 'keys', 'middleware' => 'merchant.auth'], function() use($app) {

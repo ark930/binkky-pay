@@ -124,9 +124,11 @@ IahD+bMuiSuayY2k1zGhAkAec+NXdmO8GKxQeAag3wUcko6y8TwMzhVHuj/FrUl1
     {
         $sign = $notify['sign'];
         $signType = $notify['sign_type'];
-        Helper::removeKeys($notify, ['sign', 'sign_type']);
+        $notify = Helper::removeKeys($notify, ['sign', 'sign_type']);
         $signString = $this->getSignContent($notify);
-//        openssl_verify($signString, base64_decode($sign), $this->alipayPublicKey);
+        if($this->verify($signString, $sign, $this->alipayPublicKey) === false) {
+            throw new APIException('返回数据签名验证失败');
+        }
 
         if(empty($notify['total_amount']) || $charge['amount'] != $notify['total_amount']*100) {
             throw new BadRequestException('通知无效，total_amount 不一致');
