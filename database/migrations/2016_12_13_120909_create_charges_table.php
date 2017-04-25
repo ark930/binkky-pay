@@ -17,7 +17,7 @@ class CreateChargesTable extends Migration
             $table->bigIncrements('id');
             $table->unsignedInteger('partner_id')->comment('合作方ID');
             $table->enum('channel', ['alipay', 'wechat', 'union_pay'])->comment('渠道名称');
-            $table->enum('type', ['qr', 'scan', 'pub', 'wap'])->comment('支付类型');
+            $table->enum('type', ['qr', 'scan', 'pub', 'wap', 'app'])->comment('支付类型');
             $table->string('trade_no', 64)->collation('utf8_bin')->comment('商户交易单号');
             $table->string('tn', 64)->nullable()->comment('渠道交易单号, Transaction Number');
             $table->unsignedInteger('amount')->comment('支付金额，以分为单位');

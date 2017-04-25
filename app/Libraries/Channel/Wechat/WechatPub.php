@@ -21,7 +21,7 @@ class WechatPub extends WechatBase
             'time_start'       => date('YmdHis', strtotime($charge['created_at'])),
             'notify_url'       => $this->getNotifyUrl($charge['id']),
             'trade_type'       => self::TRADE_TYPES['pub'],
-            'openid'           => $charge['auth_code'],
+            'openid'           => $params['auth_code'],
         ];
 
         $req['sign'] = $this->signArray($req, $this->key);

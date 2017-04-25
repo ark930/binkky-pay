@@ -15,6 +15,7 @@ class Charge extends Model
     const TYPE_SCAN = 'scan';
     const TYPE_PUB = 'pub';
     const TYPE_WAP = 'wap';
+    const TYPE_APP = 'app';
 
     // 支付状态
     const STATUS_PENDING= 'pending';
