@@ -50,7 +50,18 @@ class WechatApp extends WechatBase
             throw new APIException('渠道返回解析失败');
         }
 
-        $this->credential = $res['prepay_id'];
+        $credential = [
+            'appid'     => $this->appId,
+            'partnerid' => $this->mchId,
+            'prepayid'  => $res['prepay_id'],
+            'package'   => 'Sign=WXPay',
+            'noncestr'  => $this->generateNonceString($charge['trade_no']),
+            'timestamp' => time() . '',
+        ];
+
+        $credential['sign'] = $this->signArray($credential, $this->key);
+        $this->credential = $credential;
+
         return parent::charge($charge);
     }
 }
